@@ -163,6 +163,8 @@ async function sample(name, keys, rounds = 4) {
   );
 }
 async function memory() {
+  // Compare settled images; an outgoing wallpaper can otherwise disappear between counts.
+  await page.waitForFunction(() => !ShoreQA.state().crossfading);
   await cdp.send('HeapProfiler.collectGarbage');
   const m = await metrics(),
     dom = await cdp.send('Memory.getDOMCounters');
