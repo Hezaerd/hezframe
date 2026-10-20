@@ -18,7 +18,8 @@ if (!container) throw new Error('Missing HezFrame root');
 initTextMeasure(document);
 
 const env = readEnv(window, presetMinuteMs());
-const fonts = createFontService(document), images = createImageLoader();
+const fonts = createFontService(document),
+  images = createImageLoader();
 let wakeCinema = () => {};
 
 function run(effect: Effect, store: Store): void {
@@ -28,29 +29,58 @@ function run(effect: Effect, store: Store): void {
       store.dispatch({ type: 'persisted', intent: effect.intent, prefs: effect.prefs, ok });
       return;
     }
-    case 'device': runDevice(effect.op, error => store.dispatch({ type: 'deviceDone', title: effect.title, error })); return;
-    case 'loadCatalog': loadCatalog((error, entries) => store.dispatch({ type: 'catalogLoaded', request: effect.request, error, entries })); return;
-    case 'loadBundle': images.load(effect.bundle, ok => store.dispatch({ type: 'bundleLoaded', token: effect.token, bundle: effect.bundle, ok })); return;
-    case 'ensureFont':
-      fonts.ensureFont(effect.font, (ok, reason) => store.dispatch({ type: 'fontResult', token: effect.token, ok, reason }),
-        snapshot => store.dispatch({ type: 'fontsChanged', ...snapshot }));
+    case 'device':
+      runDevice(effect.op, (error) =>
+        store.dispatch({ type: 'deviceDone', title: effect.title, error }),
+      );
       return;
-    case 'after': window.setTimeout(() => store.dispatch(effect.action), effect.ms); return;
+    case 'loadCatalog':
+      loadCatalog((error, entries) =>
+        store.dispatch({ type: 'catalogLoaded', request: effect.request, error, entries }),
+      );
+      return;
+    case 'loadBundle':
+      images.load(effect.bundle, (ok) =>
+        store.dispatch({ type: 'bundleLoaded', token: effect.token, bundle: effect.bundle, ok }),
+      );
+      return;
+    case 'ensureFont':
+      fonts.ensureFont(
+        effect.font,
+        (ok, reason) => store.dispatch({ type: 'fontResult', token: effect.token, ok, reason }),
+        (snapshot) => store.dispatch({ type: 'fontsChanged', ...snapshot }),
+      );
+      return;
+    case 'after':
+      window.setTimeout(() => store.dispatch(effect.action), effect.ms);
+      return;
     case 'frames':
       requestAnimationFrame(() => {
         if (effect.count === 1) store.dispatch(effect.action);
         else requestAnimationFrame(() => store.dispatch(effect.action));
       });
       return;
-    case 'wakeCinema': wakeCinema(); return;
-    default: { const exhaustive: never = effect; return exhaustive; }
+    case 'wakeCinema':
+      wakeCinema();
+      return;
+    default: {
+      const exhaustive: never = effect;
+      return exhaustive;
+    }
   }
 }
 
 /** Bundles the store can still show; the loader keeps their decoded images alive. */
 function bundlesInUse(s: State): (BundleKey | null)[] {
-  const flow = s.look.flow, retry = s.stack.map(v => v.kind === 'wallpaper' ? v.retryBundle : null);
-  return [s.look.installed, s.look.committedBundle, s.look.previewBundle, flow && flow.kind === 'look' ? flow.loaded : null, ...retry];
+  const flow = s.look.flow,
+    retry = s.stack.map((v) => (v.kind === 'wallpaper' ? v.retryBundle : null));
+  return [
+    s.look.installed,
+    s.look.committedBundle,
+    s.look.previewBundle,
+    flow && flow.kind === 'look' ? flow.loaded : null,
+    ...retry,
+  ];
 }
 
 const store = createStore(boot(env, readStored), run, import.meta.env.DEV);
@@ -59,4 +89,8 @@ const controllers = createControllers(store);
 wakeCinema = controllers.wake;
 installQA(store, controllers);
 
-createRoot(container).render(<StrictMode><App store={store} controllers={controllers} /></StrictMode>);
+createRoot(container).render(
+  <StrictMode>
+    <App store={store} controllers={controllers} />
+  </StrictMode>,
+);

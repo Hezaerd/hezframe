@@ -2,8 +2,9 @@
   "name": "hezframe",
   "version": "0.7.0",
   "private": true,
-  "type": "module",
   "description": "A quiet Samsung TV home screen with your apps, photographs and the time.",
+  "license": "MIT",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "check": "tsc --noEmit && npm test && node --check app/config.js && node --check app/device.js && python scripts/check.py",
@@ -28,6 +29,10 @@
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check ."
   },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
   "devDependencies": {
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
@@ -39,10 +44,5 @@
     "playwright": "1.64.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.4"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "react": "^19.3.1",
-    "react-dom": "^19.3.1"
   }
 }

@@ -1,17 +1,39 @@
 import { isAppId, pick, safeIcon } from './ids.ts';
-import { BG_VALUES, CAP, DEFAULT_HOME, DISPLAY_VALUES, EXTRA_BRANDS, FOCUS_VALUES, FONT_IDS, LAYOUT_VALUES, LEGACY_STORAGE_KEY, MATERIAL_VALUES, MODE_IDS, ON_OFF, PRIMARY_APPS, PRIMARY_IDS, STORAGE_KEY } from './tables.ts';
+import {
+  BG_VALUES,
+  CAP,
+  DEFAULT_HOME,
+  DISPLAY_VALUES,
+  EXTRA_BRANDS,
+  FOCUS_VALUES,
+  FONT_IDS,
+  LAYOUT_VALUES,
+  LEGACY_STORAGE_KEY,
+  MATERIAL_VALUES,
+  MODE_IDS,
+  ON_OFF,
+  PRIMARY_APPS,
+  PRIMARY_IDS,
+  STORAGE_KEY,
+} from './tables.ts';
 import type { App, AppId, Env, FontId, Look, Prefs, WallId } from './types.ts';
 
 type Json = Record<string, unknown>;
-const isRecord = (v: unknown): v is Json => typeof v === 'object' && v !== null && !Array.isArray(v);
+const isRecord = (v: unknown): v is Json =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 export function primaryApps(): Map<AppId, App> {
-  return new Map(PRIMARY_APPS.map(a => [a.id, { id: a.id, appId: a.appId, name: a.name, brand: '', mark: true, icon: '' }]));
+  return new Map(
+    PRIMARY_APPS.map((a) => [
+      a.id,
+      { id: a.id, appId: a.appId, name: a.name, brand: '', mark: true, icon: '' },
+    ]),
+  );
 }
 
 /** Fonts that may be saved: Manrope plus the faces this build ships. Availability is checked later. */
 export function configuredFonts(env: Env): FontId[] {
-  return FONT_IDS.filter(id => id === 'manrope' || env.privateFonts.indexOf(id) >= 0);
+  return FONT_IDS.filter((id) => id === 'manrope' || env.privateFonts.indexOf(id) >= 0);
 }
 
 export function findWall(env: Env, id: unknown): WallId | null {
@@ -20,10 +42,22 @@ export function findWall(env: Env, id: unknown): WallId | null {
 }
 
 export function lookOf(c: Look): Look {
-  return { bg: c.bg, wall: c.wall, layout: c.layout, apps: c.apps, font: c.font, controls: c.controls, focus: c.focus, material: c.material };
+  return {
+    bg: c.bg,
+    wall: c.wall,
+    layout: c.layout,
+    apps: c.apps,
+    font: c.font,
+    controls: c.controls,
+    focus: c.focus,
+    material: c.material,
+  };
 }
 
-export interface Loaded { saved: Json | null; storageOk: boolean }
+export interface Loaded {
+  saved: Json | null;
+  storageOk: boolean;
+}
 
 /**
  * Reads the current key, then the 0.5 key. A version-less save predates HezFrame and resets the
@@ -41,41 +75,80 @@ export function loadSaved(env: Env, read: (key: string) => string | null): Loade
       if (typeof saved !== 'object') throw TypeError('Saved preferences are not an object');
       if (Array.isArray(saved)) continue;
       const out: Json = { ...saved };
-      if (!out.hezframeVersion) { out.home = DEFAULT_HOME.slice(); out.recent = []; }
+      if (!out.hezframeVersion) {
+        out.home = DEFAULT_HOME.slice();
+        out.recent = [];
+      }
       if (out.wallpaperConfigVersion !== env.wallRevision) {
-        out.wall = env.initialWall; out.wallpaper = env.initialWall; out.mode = env.defaultRotation;
+        out.wall = env.initialWall;
+        out.wallpaper = env.initialWall;
+        out.mode = env.defaultRotation;
         if (isRecord(out.look)) out.look = { ...out.look, wall: env.initialWall, bg: 'photo' };
         else out.bg = 'photo';
       }
       return { saved: out, storageOk };
-    } catch { storageOk = false; }
+    } catch {
+      storageOk = false;
+    }
   }
   return { saved: null, storageOk };
 }
 
 /** Turns any saved object into valid preferences, registering saved native apps. */
 export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, App>): Prefs {
-  const s: Json = saved || {}, modern = isRecord(s.look) ? s.look : s;
-  const legacyList = s.theme === 'list', themed = !!s.theme && !legacyList;
+  const s: Json = saved || {},
+    modern = isRecord(s.look) ? s.look : s;
+  const legacyList = s.theme === 'list',
+    themed = !!s.theme && !legacyList;
   const records = Array.isArray(s.appRecords) ? s.appRecords : [];
   for (const a of records.slice(0, 256)) {
-    if (!isRecord(a) || !isAppId(a.id) || !isAppId(a.appId) || typeof a.name !== 'string' || !a.name.trim() || registry.has(a.id)) continue;
+    if (
+      !isRecord(a) ||
+      !isAppId(a.id) ||
+      !isAppId(a.appId) ||
+      typeof a.name !== 'string' ||
+      !a.name.trim() ||
+      registry.has(a.id)
+    )
+      continue;
     const brand = typeof a.brand === 'string' && EXTRA_BRANDS.indexOf(a.brand) >= 0 ? a.brand : '';
-    registry.set(a.id, { id: a.id, appId: a.appId, name: a.name.slice(0, 160), brand, mark: !!brand, icon: safeIcon(a.icon) });
+    registry.set(a.id, {
+      id: a.id,
+      appId: a.appId,
+      name: a.name.slice(0, 160),
+      brand,
+      mark: !!brand,
+      icon: safeIcon(a.icon),
+    });
   }
   let home: AppId[] = [];
   for (const id of Array.isArray(s.home) ? s.home : Array.isArray(s.dock) ? s.dock : []) {
     if (!isAppId(id) || home.indexOf(id) >= 0 || home.length >= CAP) continue;
-    if (!registry.has(id) && id.indexOf('.') > 0) registry.set(id, { id, appId: id, name: id.split('.').pop() ?? '', brand: '', mark: false, icon: '' });
+    if (!registry.has(id) && id.indexOf('.') > 0)
+      registry.set(id, {
+        id,
+        appId: id,
+        name: id.split('.').pop() ?? '',
+        brand: '',
+        mark: false,
+        icon: '',
+      });
     if (registry.has(id)) home.push(id);
   }
   if (!home.length) home = DEFAULT_HOME.slice();
   const recent: AppId[] = [];
   for (const id of Array.isArray(s.recent) ? s.recent : []) {
-    if (isAppId(id) && registry.has(id) && home.indexOf(id) < 0 && recent.indexOf(id) < 0 && recent.length < 5) recent.push(id);
+    if (
+      isAppId(id) &&
+      registry.has(id) &&
+      home.indexOf(id) < 0 &&
+      recent.indexOf(id) < 0 &&
+      recent.length < 5
+    )
+      recent.push(id);
   }
   const savedWall = findWall(env, modern.wall || s.wallpaper);
-  const collections = env.collections.map(c => c.id);
+  const collections = env.collections.map((c) => c.id);
   return {
     bg: pick(modern.bg, BG_VALUES, legacyList ? 'dark' : 'photo'),
     wall: savedWall || env.initialWall,
@@ -85,25 +158,38 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
     controls: pick(modern.controls, DISPLAY_VALUES, 'both'),
     focus: pick(modern.focus, FOCUS_VALUES, themed ? 'glass' : 'type'),
     material: pick(modern.material, MATERIAL_VALUES, 'soft'),
-    home, recent,
+    home,
+    recent,
     lastApp: isAppId(s.lastApp) && home.indexOf(s.lastApp) >= 0 ? s.lastApp : home[0],
     mode: pick(s.mode, MODE_IDS, env.defaultRotation),
     cinema: pick(s.cinema, ON_OFF, env.defaults.cinema),
     crossfade: pick(s.crossfade, ON_OFF, env.defaults.crossfade),
     greeting: pick(s.greeting, ON_OFF, env.defaults.greeting),
-    collection: pick(s.collection, collections, env.defaultCollection)
+    collection: pick(s.collection, collections, env.defaultCollection),
   };
 }
 
 /** The stored object. Old keys stay alongside the current ones so earlier builds can still read it. */
 export function serialise(env: Env, c: Prefs, apps: ReadonlyMap<AppId, App>): Json {
   const out: Json = { ...c };
-  out.wallpaperConfigVersion = env.wallRevision; out.hezframeVersion = 1; out.version = 2; out.look = lookOf(c); out.dock = c.home.slice(); out.wallpaper = c.wall;
+  out.wallpaperConfigVersion = env.wallRevision;
+  out.hezframeVersion = 1;
+  out.version = 2;
+  out.look = lookOf(c);
+  out.dock = c.home.slice();
+  out.wallpaper = c.wall;
   out.theme = c.layout === 'list' ? 'list' : 'shore';
   const appRecords: Json[] = [];
   for (const key of c.home.concat(c.recent)) {
     const a = apps.get(key);
-    if (a && PRIMARY_IDS.indexOf(key) < 0 && !appRecords.some(r => r.id === key)) appRecords.push({ id: a.id, appId: a.appId, name: a.name, brand: a.brand || '', icon: a.icon || '' });
+    if (a && PRIMARY_IDS.indexOf(key) < 0 && !appRecords.some((r) => r.id === key))
+      appRecords.push({
+        id: a.id,
+        appId: a.appId,
+        name: a.name,
+        brand: a.brand || '',
+        icon: a.icon || '',
+      });
   }
   out.appRecords = appRecords;
   return out;

@@ -8,7 +8,8 @@ export interface Store {
 }
 
 function deepFreeze(value: unknown): void {
-  if (typeof value !== 'object' || value === null || Object.isFrozen(value) || value instanceof Map) return;
+  if (typeof value !== 'object' || value === null || Object.isFrozen(value) || value instanceof Map)
+    return;
   Object.freeze(value);
   for (const v of Object.values(value)) deepFreeze(v);
 }
@@ -19,9 +20,15 @@ function deepFreeze(value: unknown): void {
  * dispatch at once (a storage result, the browser's device error) joins the same drain, so
  * listeners only ever see a state where the whole chain has been applied.
  */
-export function createStore(start: Result, run: (effect: Effect, store: Store) => void, freeze = false): Store {
-  let state = start.state, draining = false;
-  const queue: Action[] = [], listeners = new Set<() => void>();
+export function createStore(
+  start: Result,
+  run: (effect: Effect, store: Store) => void,
+  freeze = false,
+): Store {
+  let state = start.state,
+    draining = false;
+  const queue: Action[] = [],
+    listeners = new Set<() => void>();
   const store: Store = {
     getState: () => state,
     dispatch(action) {
@@ -39,17 +46,24 @@ export function createStore(start: Result, run: (effect: Effect, store: Store) =
         }
         if (rendered) state = settle(state);
         if (freeze) deepFreeze(state);
-      } finally { draining = false; }
-      listeners.forEach(l => l());
+      } finally {
+        draining = false;
+      }
+      listeners.forEach((l) => l());
     },
     subscribe(listener) {
       listeners.add(listener);
-      return () => { listeners.delete(listener); };
-    }
+      return () => {
+        listeners.delete(listener);
+      };
+    },
   };
   draining = true;
-  try { for (const effect of start.effects) run(effect, store); }
-  finally { draining = false; }
+  try {
+    for (const effect of start.effects) run(effect, store);
+  } finally {
+    draining = false;
+  }
   const pending = queue.splice(0);
   for (const action of pending) store.dispatch(action);
   return store;

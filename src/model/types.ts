@@ -64,11 +64,39 @@ export interface Wallpaper {
   clockInk: string;
   dockClockInk: string;
 }
-export interface Collection { id: CollectionId; name: string; wallpapers: WallId[] }
+export interface Collection {
+  id: CollectionId;
+  name: string;
+  wallpapers: WallId[];
+}
 /** Offline photo-family inks. Absent fields stay absent so their CSS variables are removed. */
-export interface PaletteZone { pol?: string; ink?: string; clockInk?: string; restInk?: string; peerInk?: string; restAlpha?: number | string; peerAlpha?: number | string; halo?: string; shadow?: string; rung?: string }
-export interface Palette { locked: boolean; light: string; tl?: PaletteZone; tr?: PaletteZone; br?: PaletteZone }
-export interface IconMetric { n: number; x: number; y: number; w: number; h: number; fill: number }
+export interface PaletteZone {
+  pol?: string;
+  ink?: string;
+  clockInk?: string;
+  restInk?: string;
+  peerInk?: string;
+  restAlpha?: number | string;
+  peerAlpha?: number | string;
+  halo?: string;
+  shadow?: string;
+  rung?: string;
+}
+export interface Palette {
+  locked: boolean;
+  light: string;
+  tl?: PaletteZone;
+  tr?: PaletteZone;
+  br?: PaletteZone;
+}
+export interface IconMetric {
+  n: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  fill: number;
+}
 
 /** Everything read from the runtime scripts and the browser once at startup. */
 export interface Env {
@@ -91,18 +119,58 @@ export interface Env {
   minuteMs: number;
 }
 
-export interface UndoEntry { label: string; snap: { home: AppId[]; recent: AppId[] } }
+export interface UndoEntry {
+  label: string;
+  snap: { home: AppId[]; recent: AppId[] };
+}
 
 export type HomeZone = 'apps' | 'util';
-export type SettingsGroup = 'background' | 'layout' | 'typography' | 'focus' | 'editor' | 'atmosphere' | 'samsung';
-export type DetailGroup = 'background' | 'layout' | 'typography' | 'focus' | 'atmosphere' | 'samsung' | 'rotation' | 'collections';
+export type SettingsGroup =
+  | 'background'
+  | 'layout'
+  | 'typography'
+  | 'focus'
+  | 'editor'
+  | 'atmosphere'
+  | 'samsung';
+export type DetailGroup =
+  | 'background'
+  | 'layout'
+  | 'typography'
+  | 'focus'
+  | 'atmosphere'
+  | 'samsung'
+  | 'rotation'
+  | 'collections';
 export type MessageAction = 'stay' | 'samsung' | 'back';
-export interface MessageContent { title: string; line: string; note: string; actions: [MessageAction, string][] }
-export interface Lifted { id: AppId; from: number; order: AppId[]; snap: UndoEntry['snap'] }
+export interface MessageContent {
+  title: string;
+  line: string;
+  note: string;
+  actions: [MessageAction, string][];
+}
+export interface Lifted {
+  id: AppId;
+  from: number;
+  order: AppId[];
+  snap: UndoEntry['snap'];
+}
 
-export interface HomeView { kind: 'home'; zone: HomeZone; u: number }
-export interface SettingsView { kind: 'settings'; focus: SettingsGroup }
-export interface DetailView { kind: 'appearance'; group: DetailGroup; action: string; column: number | undefined }
+export interface HomeView {
+  kind: 'home';
+  zone: HomeZone;
+  u: number;
+}
+export interface SettingsView {
+  kind: 'settings';
+  focus: SettingsGroup;
+}
+export interface DetailView {
+  kind: 'appearance';
+  group: DetailGroup;
+  action: string;
+  column: number | undefined;
+}
 export interface WallpaperView {
   kind: 'wallpaper';
   /** Distinguishes this picker from a later reopened one, as the old object identity did. */
@@ -118,7 +186,12 @@ export interface WallpaperView {
   failedApply: boolean;
   retryBundle: BundleKey | null;
 }
-export interface AppsView { kind: 'apps'; top: number; zone: 'grid' | 'head'; i: number }
+export interface AppsView {
+  kind: 'apps';
+  top: number;
+  zone: 'grid' | 'head';
+  i: number;
+}
 export interface EditorView {
   kind: 'editor';
   lifted: Lifted | null;
@@ -130,15 +203,34 @@ export interface EditorView {
   h: number;
   j: number;
 }
-export interface MessageView { kind: 'message'; msg: 'leave' | 'error'; content: MessageContent; b: number }
-export type Overlay = SettingsView | DetailView | WallpaperView | AppsView | EditorView | MessageView;
+export interface MessageView {
+  kind: 'message';
+  msg: 'leave' | 'error';
+  content: MessageContent;
+  b: number;
+}
+export type Overlay =
+  | SettingsView
+  | DetailView
+  | WallpaperView
+  | AppsView
+  | EditorView
+  | MessageView;
 export type View = HomeView | Overlay;
 export type ViewKind = View['kind'];
 export type Stack = [HomeView, ...Overlay[]];
 
 /** A decoded wallpaper plus material set; images are retained by the loader per key. */
-export interface BundleKey { wall: WallId; material: Material }
-export interface Shown { bg: Bg; wall: WallId; material: Material; font: FontId }
+export interface BundleKey {
+  wall: WallId;
+  material: Material;
+}
+export interface Shown {
+  bg: Bg;
+  wall: WallId;
+  material: Material;
+  font: FontId;
+}
 export interface Pending {
   patch: LookPatch;
   target: Look;
@@ -150,23 +242,58 @@ export interface Pending {
 /** The failed change. Try again re-reads `patch[row]`, as the stored error always has. */
 export type LookError =
   | { type: 'save'; patch: Partial<Record<string, string>>; row: string; transient?: boolean }
-  | { type: 'load' | 'font'; reason: string | null; patch: Partial<Record<string, string>>; row: string; transient: boolean; wall: WallId; font: FontId };
-export interface LookOptions { row?: string; transient?: boolean; startup?: boolean }
+  | {
+      type: 'load' | 'font';
+      reason: string | null;
+      patch: Partial<Record<string, string>>;
+      row: string;
+      transient: boolean;
+      wall: WallId;
+      font: FontId;
+    };
+export interface LookOptions {
+  row?: string;
+  transient?: boolean;
+  startup?: boolean;
+}
 
 /** An in-flight appearance change (setLook) or wallpaper preview (showWall). */
 export type LookFlow =
-  | { kind: 'look'; target: Look; changes: LookPatch; opts: LookOptions; changed: boolean; imageDone: boolean; fontDone: boolean; failed: boolean; loaded: BundleKey | null }
+  | {
+      kind: 'look';
+      target: Look;
+      changes: LookPatch;
+      opts: LookOptions;
+      changed: boolean;
+      imageDone: boolean;
+      fontDone: boolean;
+      failed: boolean;
+      loaded: BundleKey | null;
+    }
   | { kind: 'preview'; target: Look; picker: number; wall: WallId };
 
 export interface FaceMetrics {
-  roles: Record<'display' | 'clock' | 'primary' | 'ui', Record<number, { cap: number; ascent: number; descent: number; lower: number }>>;
+  roles: Record<
+    'display' | 'clock' | 'primary' | 'ui',
+    Record<number, { cap: number; ascent: number; descent: number; lower: number }>
+  >;
   digits: number[];
   digitCell: number;
   fallback?: boolean;
 }
 
-export interface CatalogState { loading: boolean; loaded: boolean; error: string | null; request: number; revision: number; ids: AppId[] }
-export interface Crossfade { token: number; wall: WallId | null }
+export interface CatalogState {
+  loading: boolean;
+  loaded: boolean;
+  error: string | null;
+  request: number;
+  revision: number;
+  ids: AppId[];
+}
+export interface Crossfade {
+  token: number;
+  wall: WallId | null;
+}
 
 export interface State {
   env: Env;
@@ -217,8 +344,16 @@ export interface State {
   veil: 'unset' | 'clear' | 'dim';
 }
 
-export interface CatalogEntry { appId: string; name: string; brand: string; icon: string }
-export interface DeviceError { message?: string; detail?: string }
+export interface CatalogEntry {
+  appId: string;
+  name: string;
+  brand: string;
+  icon: string;
+}
+export interface DeviceError {
+  message?: string;
+  detail?: string;
+}
 export type DeviceOp = { op: 'launch'; appId: string } | { op: 'home' } | { op: 'settings' };
 
 export type CommitIntent =
@@ -231,9 +366,30 @@ export type CommitIntent =
   | { kind: 'wallpaper'; wall: WallId; bundle: BundleKey }
   | { kind: 'rotation'; mode: RotationMode }
   | { kind: 'extra'; axis: ExtraAxis; value: string }
-  | { kind: 'look'; target: Look; changes: LookPatch; opts: LookOptions; bundle: BundleKey | null; fontChanged: boolean; reflow: boolean };
+  | {
+      kind: 'look';
+      target: Look;
+      changes: LookPatch;
+      opts: LookOptions;
+      bundle: BundleKey | null;
+      fontChanged: boolean;
+      reflow: boolean;
+    };
 
-export type PointZone = 'util' | 'app' | 'grid' | 'head' | 'name' | 'remove' | 'other' | 'row' | 'detail' | 'act' | 'wall-back' | 'wall-retry' | 'wall-choice';
+export type PointZone =
+  | 'util'
+  | 'app'
+  | 'grid'
+  | 'head'
+  | 'name'
+  | 'remove'
+  | 'other'
+  | 'row'
+  | 'detail'
+  | 'act'
+  | 'wall-back'
+  | 'wall-retry'
+  | 'wall-choice';
 
 export type Action =
   | { type: 'key'; key: RemoteKey }
@@ -249,7 +405,12 @@ export type Action =
   | { type: 'catalogLoaded'; request: number; error: string | null; entries: CatalogEntry[] }
   | { type: 'bundleLoaded'; token: number; bundle: BundleKey; ok: boolean }
   | { type: 'fontResult'; token: number; ok: boolean; reason: string | null }
-  | { type: 'fontsChanged'; metrics: Partial<Record<FontId, FaceMetrics>>; unavailable: FontId[]; ready: boolean }
+  | {
+      type: 'fontsChanged';
+      metrics: Partial<Record<FontId, FaceMetrics>>;
+      unavailable: FontId[];
+      ready: boolean;
+    }
   | { type: 'lookSettle'; token: number }
   | { type: 'previewDue'; seq: number; wall: WallId }
   | { type: 'rotate' }

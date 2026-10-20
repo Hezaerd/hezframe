@@ -5,14 +5,25 @@ import { resolve } from 'node:path';
 
 const root = process.cwd();
 export default defineConfig(({ command }) => ({
-  root: resolve(root, 'app'), base: './', publicDir: false,
+  root: resolve(root, 'app'),
+  base: './',
+  publicDir: false,
   resolve: { alias: { '/src': resolve(root, 'src') } },
   plugins: [react(), tizenWidgetAssets({ projectRoot: root })],
   server: { host: '127.0.0.1', port: 5173, strictPort: true },
   build: {
-    outDir: resolve(root, 'dist/web'), emptyOutDir: true, target: `chrome${TV_CHROME_MAJOR}`,
-    lib: { entry: resolve(root, 'src/main.tsx'), name: 'HezFrame', formats: ['iife'], fileName: () => 'hezframe.js' },
-    sourcemap: false
+    outDir: resolve(root, 'dist/web'),
+    emptyOutDir: true,
+    target: `chrome${TV_CHROME_MAJOR}`,
+    lib: {
+      entry: resolve(root, 'src/main.tsx'),
+      name: 'HezFrame',
+      formats: ['iife'],
+      fileName: () => 'hezframe.js',
+    },
+    sourcemap: false,
   },
-  define: { 'process.env.NODE_ENV': JSON.stringify(command === 'build' ? 'production' : 'development') }
+  define: {
+    'process.env.NODE_ENV': JSON.stringify(command === 'build' ? 'production' : 'development'),
+  },
 }));

@@ -3,8 +3,5 @@
   "singleQuote": true,
   "printWidth": 100,
   "endOfLine": "lf",
-  "ignorePatterns": [
-    "app/assets/**",
-    "package-lock.json"
-  ]
+  "ignorePatterns": ["app/assets/**", "package-lock.json"]
 }

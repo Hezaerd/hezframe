@@ -1,13 +1,6 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": [
-    "typescript",
-    "unicorn",
-    "oxc",
-    "react",
-    "jsx-a11y",
-    "import"
-  ],
+  "plugins": ["typescript", "unicorn", "oxc", "react", "jsx-a11y", "import"],
   "categories": {
     "correctness": "error",
     "suspicious": "warn",
@@ -17,12 +10,7 @@
     "browser": true,
     "node": true
   },
-  "ignorePatterns": [
-    "app/assets/**",
-    ".local/**",
-    "dist/**",
-    "node_modules/**"
-  ],
+  "ignorePatterns": ["app/assets/**", ".local/**", "dist/**", "node_modules/**"],
   "rules": {
     "unicorn/catch-error-name": "warn",
     "unicorn/consistent-assert": "warn",
@@ -174,10 +162,7 @@
   },
   "overrides": [
     {
-      "files": [
-        "src/**/*.ts",
-        "src/**/*.tsx"
-      ],
+      "files": ["src/**/*.ts", "src/**/*.tsx"],
       "rules": {
         "unicorn/prefer-at": "off",
         "unicorn/no-array-sort": "off",
@@ -187,9 +172,7 @@
       }
     },
     {
-      "files": [
-        "app/*.js"
-      ],
+      "files": ["app/*.js"],
       "rules": {
         "unicorn/catch-error-name": "off",
         "unicorn/consistent-assert": "off",
@@ -331,11 +314,7 @@
       }
     },
     {
-      "files": [
-        "scripts/**/*.mjs",
-        "src/**/*.test.ts",
-        "src/**/*.test-support.ts"
-      ],
+      "files": ["scripts/**/*.mjs", "src/**/*.test.ts", "src/**/*.test-support.ts"],
       "rules": {
         "eslint/no-await-in-loop": "off",
         "eslint/no-underscore-dangle": "off",
