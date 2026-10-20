@@ -108,4 +108,3 @@ export function serialise(env: Env, c: Prefs, apps: ReadonlyMap<AppId, App>): Js
   out.appRecords = appRecords;
   return out;
 }
-

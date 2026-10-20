@@ -564,4 +564,3 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
   }
   norm(d);
 }
-

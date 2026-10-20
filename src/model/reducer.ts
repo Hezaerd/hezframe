@@ -152,4 +152,3 @@ export function settle(state: State): State {
   }
   return finish(d).state;
 }
-
