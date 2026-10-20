@@ -7,7 +7,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "tsc --noEmit && npm test && node --check app/config.js && node --check app/device.js && python scripts/check.py",
+    "check": "npm run lint && npm run format:check && tsc --noEmit && npm test && node --check app/config.js && node --check app/device.js && python scripts/check.py",
     "test": "node --test \"src/**/*.test.ts\"",
     "package": "python scripts/package.py",
     "tv:info": "python scripts/tv.py info",

@@ -92,12 +92,14 @@ export function release(d: Draft): void {
 export function perform(d: Draft, title: string, op: DeviceOp): void {
   if (d.session.busy) return;
   d.session.busy = token(d);
-  d.fx.push({
-    kind: 'after',
-    ms: 10000,
-    action: { type: 'releaseTimeout', token: d.session.busy },
-  });
-  d.fx.push({ kind: 'device', title, op });
+  d.fx.push(
+    {
+      kind: 'after',
+      ms: 10_000,
+      action: { type: 'releaseTimeout', token: d.session.busy },
+    },
+    { kind: 'device', title, op },
+  );
 }
 
 export function message(d: Draft, title: string, line: string, note: string): void {
@@ -112,7 +114,7 @@ export function message(d: Draft, title: string, line: string, note: string): vo
 function launch(d: Draft, id: AppId | null): void {
   const a = id ? d.apps.get(id) : undefined;
   if (!a || d.session.busy) return;
-  if (d.prefs.home.indexOf(a.id) >= 0) write(d, { ...next(d), lastApp: a.id }, { kind: 'lastApp' });
+  if (d.prefs.home.includes(a.id)) write(d, { ...next(d), lastApp: a.id }, { kind: 'lastApp' });
   d.session.press = a.id;
   perform(d, a.name, { op: 'launch', appId: a.appId });
 }
@@ -145,9 +147,9 @@ export function catalogLoaded(
   const apps = new Map(d.apps),
     ids: AppId[] = [];
   for (const entry of entries) {
-    const id = PRIMARY_IDS.indexOf(entry.brand) >= 0 ? entry.brand : entry.appId;
-    if (!isAppId(id) || !isAppId(entry.appId) || ids.indexOf(id) >= 0) continue;
-    const primary = PRIMARY_APPS.filter((p) => p.id === id)[0];
+    const id = PRIMARY_IDS.includes(entry.brand) ? entry.brand : entry.appId;
+    if (!isAppId(id) || !isAppId(entry.appId) || ids.includes(id)) continue;
+    const primary = PRIMARY_APPS.find((p) => p.id === id);
     const a: App = {
       id,
       appId: entry.appId,
@@ -167,7 +169,7 @@ export function catalogLoaded(
   d.catalog.loaded = true;
   d.catalog.error = null;
   d.catalog.revision++;
-  if (t.kind === 'apps' && oldFocus && ids.indexOf(oldFocus) >= 0) t.i = ids.indexOf(oldFocus);
+  if (t.kind === 'apps' && oldFocus && ids.includes(oldFocus)) t.i = ids.indexOf(oldFocus);
   norm(d);
 }
 
@@ -218,7 +220,7 @@ function openEditor(d: Draft): void {
     lifted: null,
     top: 0,
     otherReturn: { id: otherList(d)[0] || null, index: 0, top: 0 },
-    zone: d.prefs.home.length ? 'home' : 'other',
+    zone: d.prefs.home.length > 0 ? 'home' : 'other',
     i: Math.max(0, i),
     part: 'name',
     h: 1,
@@ -357,14 +359,14 @@ function returnOther(d: Draft, t: EditorView): void {
 function editorRemove(d: Draft, id: AppId): void {
   const i = d.prefs.home.indexOf(id),
     before = snap(d);
-  if (i < 0) return;
+  if (i === -1) return;
   if (d.prefs.home.length <= 1) {
     d.session.note = LAST;
     return;
   }
-  const h = d.prefs.home.slice();
+  const h = [...d.prefs.home];
   h.splice(i, 1);
-  write(d, next(d, h, [id].concat(without(d.prefs.recent, id)).slice(0, 5)), {
+  write(d, next(d, h, [id, ...without(d.prefs.recent, id)].slice(0, 5)), {
     kind: 'remove',
     id,
     index: i,
@@ -390,7 +392,7 @@ function editorAdd(d: Draft, t: EditorView, id: AppId | undefined): void {
   rememberOther(d, t);
   if (!id) return;
   const before = snap(d),
-    h = d.prefs.home.slice();
+    h = [...d.prefs.home];
   if (h.length >= CAP) {
     d.session.note = FULL;
     return;
@@ -424,7 +426,7 @@ function editorPlace(d: Draft, t: EditorView): void {
     t.lifted = null;
     return;
   }
-  write(d, next(d, lifted.order.slice()), { kind: 'move', id: lifted.id, before: lifted.snap });
+  write(d, next(d, [...lifted.order]), { kind: 'move', id: lifted.id, before: lifted.snap });
 }
 export function moved(d: Draft, id: AppId, before: { home: AppId[]; recent: AppId[] }): void {
   d.session.undo.push({ label: 'Move ' + app(d, id).name, snap: before });
@@ -440,7 +442,7 @@ function undoLast(d: Draft): void {
     d.session.note = 'Nothing to undo';
     return;
   }
-  write(d, next(d, u.snap.home.slice(), u.snap.recent.slice()), { kind: 'undo', entry: u });
+  write(d, next(d, [...u.snap.home], [...u.snap.recent]), { kind: 'undo', entry: u });
 }
 export function undone(d: Draft, label: string): void {
   d.session.undo.pop();
@@ -501,7 +503,7 @@ function editorKey(d: Draft, t: EditorView, k: RemoteKey): void {
       if (t.part === 'remove') t.part = 'name';
     } else if (k === 'ok') {
       d.session.note = null;
-      if (t.part === 'name') t.lifted = { id: H[t.i], from: t.i, order: H.slice(), snap: snap(d) };
+      if (t.part === 'name') t.lifted = { id: H[t.i], from: t.i, order: [...H], snap: snap(d) };
       else editorRemove(d, H[t.i]);
     }
   } else {
@@ -554,7 +556,7 @@ function applyRotation(d: Draft, value: string | undefined): void {
   d.session.err = null;
   d.look.error = null;
   if (value === d.prefs.mode) return;
-  const mode = MODE_IDS.filter((m) => m === value)[0];
+  const mode = MODE_IDS.find((m) => m === value);
   // A Try again whose stored row was Rotation but whose patch was not a rotation used to save an undefined mode.
   if (!mode) return;
   write(d, { ...next(d), mode }, { kind: 'rotation', mode });
@@ -563,14 +565,14 @@ function applyRotation(d: Draft, value: string | undefined): void {
 function applyExtra(d: Draft, axis: ExtraAxis, value: string | undefined): void {
   const c = d.prefs;
   if (axis === 'collection') {
-    const id = d.env.collections.map((x) => x.id).filter((x) => x === value)[0];
+    const id = d.env.collections.map((x) => x.id).find((x) => x === value);
     if (!id || c.collection === id) return;
     d.session.err = null;
     d.look.error = null;
     write(d, { ...next(d), collection: id }, { kind: 'extra', axis, value: id });
     return;
   }
-  const v = ON_OFF.filter((x) => x === value)[0];
+  const v = ON_OFF.find((x) => x === value);
   if (!v || c[axis] === v) return;
   d.session.err = null;
   d.look.error = null;
@@ -580,11 +582,11 @@ function applyExtra(d: Draft, axis: ExtraAxis, value: string | undefined): void 
   else prefs.greeting = v;
   write(d, prefs, { kind: 'extra', axis, value: v });
 }
-export function extraSaved(d: Draft, axis: ExtraAxis, value: string): void {
+export function extraSaved(d: Draft, axis: ExtraAxis, _value: string): void {
   d.fx.push({ kind: 'wakeCinema' });
   if (axis !== 'collection' || d.prefs.bg !== 'photo') return;
   const collection = collectionById(d.env, d.prefs.collection);
-  if (collection.wallpapers.indexOf(d.prefs.wall) < 0)
+  if (!collection.wallpapers.includes(d.prefs.wall))
     setLook(d, { wall: collection.wallpapers[0] }, { row: 'wall' });
 }
 
@@ -602,7 +604,7 @@ function lookPatchFor(axis: string, value: string | undefined): LookPatch | null
   else if (axis === 'material' && (value === 'soft' || value === 'frost' || value === 'tint'))
     patch.material = value;
   else if (axis === 'font' && FONT_IDS.some((f) => f === value))
-    patch.font = FONT_IDS.filter((f) => f === value)[0];
+    patch.font = FONT_IDS.find((f) => f === value);
   else return null;
   return patch;
 }
@@ -717,27 +719,34 @@ function messageKey(d: Draft, t: MessageView, k: RemoteKey): void {
 
 function key(d: Draft, t: View, k: RemoteKey): void {
   switch (t.kind) {
-    case 'home':
+    case 'home': {
       homeKey(d, t, k);
       return;
-    case 'apps':
+    }
+    case 'apps': {
       appsKey(d, t, k);
       return;
-    case 'editor':
+    }
+    case 'editor': {
       editorKey(d, t, k);
       return;
-    case 'settings':
+    }
+    case 'settings': {
       settingsKey(d, t, k);
       return;
-    case 'appearance':
+    }
+    case 'appearance': {
       detailKey(d, t, k);
       return;
-    case 'wallpaper':
+    }
+    case 'wallpaper': {
       wallpaperKey(d, t, k);
       return;
-    case 'message':
+    }
+    case 'message': {
       messageKey(d, t, k);
       return;
+    }
     default: {
       const exhaustive: never = t;
       return exhaustive;
@@ -788,7 +797,7 @@ export function norm(d: Draft): void {
     if (t.zone === 'other' && !no) t.zone = nh ? 'home' : 'head';
   } else if (t.kind === 'settings') {
     const ids = settingsRows(d).map((r) => r.id);
-    if (ids.indexOf(t.focus) < 0) t.focus = ids[0];
+    if (!ids.includes(t.focus)) t.focus = ids[0];
   }
 }
 
@@ -811,7 +820,7 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
   norm(d);
   const t = top(d);
   switch (t.kind) {
-    case 'home':
+    case 'home': {
       if (zone === 'util') {
         t.zone = 'util';
         t.u = i;
@@ -822,7 +831,8 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
       } else break;
       homeKey(d, t, 'ok');
       break;
-    case 'apps':
+    }
+    case 'apps': {
       if (zone === 'grid') {
         t.zone = 'grid';
         t.i = i;
@@ -830,7 +840,8 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
       else break;
       appsKey(d, t, 'ok');
       break;
-    case 'editor':
+    }
+    case 'editor': {
       if (t.lifted) {
         if (zone === 'name' && i === t.i) editorKey(d, t, 'ok');
         break;
@@ -849,15 +860,16 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
       } else break;
       editorKey(d, t, 'ok');
       break;
+    }
     case 'settings': {
       if (zone !== 'row' || !id) break;
       const ids = settingsRows(d).map((r) => r.id),
-        at = ids.findIndex((x) => x === id);
-      t.focus = at >= 0 ? ids[at] : ids[0];
+        at = ids.indexOf(id as (typeof ids)[number]);
+      t.focus = at === -1 ? ids[0] : ids[at];
       settingsKey(d, t, 'ok');
       break;
     }
-    case 'appearance':
+    case 'appearance': {
       if (zone !== 'detail') break;
       detailRows(d, t.group).some((items) =>
         items.some((item, column) => {
@@ -868,7 +880,8 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
         }),
       );
       break;
-    case 'wallpaper':
+    }
+    case 'wallpaper': {
       if (zone === 'wall-back') closeWallpaper(d, t);
       else if (zone === 'wall-retry') retryWallpaper(d, t);
       else if (zone === 'wall-choice' && i >= 0 && i < d.env.walls.length) {
@@ -878,12 +891,14 @@ export function point(d: Draft, zone: PointZone, i: number, id: string | null): 
         } else previewWallpaper(d, t, i, true, false);
       }
       break;
-    case 'message':
+    }
+    case 'message': {
       if (zone === 'act') {
         t.b = i;
         messageKey(d, t, 'ok');
       }
       break;
+    }
     default: {
       const exhaustive: never = t;
       return exhaustive;

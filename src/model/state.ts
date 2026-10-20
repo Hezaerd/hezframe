@@ -28,7 +28,7 @@ function copyOverlay(v: Overlay): Overlay {
   if (v.kind === 'editor')
     return {
       ...v,
-      lifted: v.lifted && { ...v.lifted, order: v.lifted.order.slice() },
+      lifted: v.lifted && { ...v.lifted, order: [...v.lifted.order] },
       otherReturn: { ...v.otherReturn },
     };
   return { ...v };
@@ -43,7 +43,7 @@ export function draft(s: State): Draft {
     session: {
       ...s.session,
       detailFocus: { ...s.session.detailFocus },
-      undo: s.session.undo.slice(),
+      undo: [...s.session.undo],
       removedAt: { ...s.session.removedAt },
     },
     look: { ...s.look },
@@ -69,7 +69,7 @@ export function pop(d: Draft): void {
 
 export function app(s: State, id: AppId): App {
   const a = s.apps.get(id);
-  if (!a) throw Error('Unknown app: ' + id);
+  if (!a) throw new Error('Unknown app: ' + id);
   return a;
 }
 export function wallById(env: Env, id: WallId): Wallpaper {
@@ -101,27 +101,27 @@ export function homeFont(s: State): FontId {
 export function availableFonts(s: State): FontId[] {
   const out: FontId[] = ['manrope'];
   for (const id of ['montreal', 'mori', 'pangram', 'geist', 'newsreader'] as const) {
-    if (s.env.privateFonts.indexOf(id) >= 0 && s.fonts.unavailable.indexOf(id) < 0) out.push(id);
+    if (s.env.privateFonts.includes(id) && !s.fonts.unavailable.includes(id)) out.push(id);
   }
   return out;
 }
 export function onHome(s: State, id: AppId): boolean {
-  return s.prefs.home.indexOf(id) >= 0;
+  return s.prefs.home.includes(id);
 }
 export function isPrimary(id: AppId): boolean {
-  return PRIMARY_IDS.indexOf(id) >= 0;
+  return PRIMARY_IDS.includes(id);
 }
 
 /** Prefs carrying the given Home order; every other field keeps its committed value. */
 export function next(
   d: State,
-  home: AppId[] = d.prefs.home.slice(),
-  recent: AppId[] = d.prefs.recent.slice(),
+  home: AppId[] = [...d.prefs.home],
+  recent: AppId[] = [...d.prefs.recent],
 ): Prefs {
   return { ...d.prefs, home, recent };
 }
 export function snap(d: State) {
-  return { home: d.prefs.home.slice(), recent: d.prefs.recent.slice() };
+  return { home: [...d.prefs.home], recent: [...d.prefs.recent] };
 }
 
 /** Requests a storage write. The runner answers with `persisted`, and the intent's continuation runs. */

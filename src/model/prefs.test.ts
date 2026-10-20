@@ -122,7 +122,7 @@ test('Each time Home opens advances the photo once per cold start, not for a fir
       HezFrameConfig: { wallpapers: { initial: 'cove', rotation: 'open' } },
       document: { documentElement: { style: {} } },
     },
-    60000,
+    60_000,
   );
   const first = boot(openByDefault, () => null).effects[0];
   assert.ok(first.kind === 'persist' && first.prefs.mode === 'open' && first.prefs.wall === 'cove');

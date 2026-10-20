@@ -18,7 +18,7 @@ export function typeset({ font, metrics, prefs, apps }: TypesetInput) {
   const shift = (role: FontRole, size: number) => fontShift(metrics, font, role, size);
   const name = (id: AppId) => {
     const a = apps.get(id);
-    if (!a) throw Error('Unknown app: ' + id);
+    if (!a) throw new Error('Unknown app: ' + id);
     return a.name;
   };
   function dockLabelSize(id: AppId): number {

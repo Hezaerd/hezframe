@@ -33,7 +33,7 @@ export function primaryApps(): Map<AppId, App> {
 
 /** Fonts that may be saved: Manrope plus the faces this build ships. Availability is checked later. */
 export function configuredFonts(env: Env): FontId[] {
-  return FONT_IDS.filter((id) => id === 'manrope' || env.privateFonts.indexOf(id) >= 0);
+  return FONT_IDS.filter((id) => id === 'manrope' || env.privateFonts.includes(id));
 }
 
 export function findWall(env: Env, id: unknown): WallId | null {
@@ -72,11 +72,11 @@ export function loadSaved(env: Env, read: (key: string) => string | null): Loade
       const saved: unknown = JSON.parse(raw);
       if (!saved) continue;
       // The controller assigned properties to the parsed value; that threw for strings, numbers and true.
-      if (typeof saved !== 'object') throw TypeError('Saved preferences are not an object');
+      if (typeof saved !== 'object') throw new TypeError('Saved preferences are not an object');
       if (Array.isArray(saved)) continue;
       const out: Json = { ...saved };
       if (!out.hezframeVersion) {
-        out.home = DEFAULT_HOME.slice();
+        out.home = [...DEFAULT_HOME];
         out.recent = [];
       }
       if (out.wallpaperConfigVersion !== env.wallRevision) {
@@ -111,7 +111,7 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
       registry.has(a.id)
     )
       continue;
-    const brand = typeof a.brand === 'string' && EXTRA_BRANDS.indexOf(a.brand) >= 0 ? a.brand : '';
+    const brand = typeof a.brand === 'string' && EXTRA_BRANDS.includes(a.brand) ? a.brand : '';
     registry.set(a.id, {
       id: a.id,
       appId: a.appId,
@@ -123,7 +123,7 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
   }
   let home: AppId[] = [];
   for (const id of Array.isArray(s.home) ? s.home : Array.isArray(s.dock) ? s.dock : []) {
-    if (!isAppId(id) || home.indexOf(id) >= 0 || home.length >= CAP) continue;
+    if (!isAppId(id) || home.includes(id) || home.length >= CAP) continue;
     if (!registry.has(id) && id.indexOf('.') > 0)
       registry.set(id, {
         id,
@@ -135,14 +135,14 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
       });
     if (registry.has(id)) home.push(id);
   }
-  if (!home.length) home = DEFAULT_HOME.slice();
+  if (home.length === 0) home = [...DEFAULT_HOME];
   const recent: AppId[] = [];
   for (const id of Array.isArray(s.recent) ? s.recent : []) {
     if (
       isAppId(id) &&
       registry.has(id) &&
-      home.indexOf(id) < 0 &&
-      recent.indexOf(id) < 0 &&
+      !home.includes(id) &&
+      !recent.includes(id) &&
       recent.length < 5
     )
       recent.push(id);
@@ -160,7 +160,7 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
     material: pick(modern.material, MATERIAL_VALUES, 'soft'),
     home,
     recent,
-    lastApp: isAppId(s.lastApp) && home.indexOf(s.lastApp) >= 0 ? s.lastApp : home[0],
+    lastApp: isAppId(s.lastApp) && home.includes(s.lastApp) ? s.lastApp : home[0],
     mode: pick(s.mode, MODE_IDS, env.defaultRotation),
     cinema: pick(s.cinema, ON_OFF, env.defaults.cinema),
     crossfade: pick(s.crossfade, ON_OFF, env.defaults.crossfade),
@@ -171,18 +171,20 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
 
 /** The stored object. Old keys stay alongside the current ones so earlier builds can still read it. */
 export function serialise(env: Env, c: Prefs, apps: ReadonlyMap<AppId, App>): Json {
-  const out: Json = { ...c };
-  out.wallpaperConfigVersion = env.wallRevision;
-  out.hezframeVersion = 1;
-  out.version = 2;
-  out.look = lookOf(c);
-  out.dock = c.home.slice();
-  out.wallpaper = c.wall;
-  out.theme = c.layout === 'list' ? 'list' : 'shore';
+  const out: Json = {
+    ...c,
+    wallpaperConfigVersion: env.wallRevision,
+    hezframeVersion: 1,
+    version: 2,
+    look: lookOf(c),
+    dock: [...c.home],
+    wallpaper: c.wall,
+    theme: c.layout === 'list' ? 'list' : 'shore',
+  };
   const appRecords: Json[] = [];
-  for (const key of c.home.concat(c.recent)) {
+  for (const key of [...c.home, ...c.recent]) {
     const a = apps.get(key);
-    if (a && PRIMARY_IDS.indexOf(key) < 0 && !appRecords.some((r) => r.id === key))
+    if (a && !PRIMARY_IDS.includes(key) && !appRecords.some((r) => r.id === key))
       appRecords.push({
         id: a.id,
         appId: a.appId,

@@ -8,13 +8,21 @@ export function probeMark(id: string): void {
   if (probes.has(id)) return;
   probes.set(id, 'loading');
   const im = new Image();
-  im.onload = () => {
-    probes.set(id, 'ok');
-  };
-  im.onerror = () => {
-    probes.set(id, 'bad');
-    listeners.forEach((l) => l());
-  };
+  im.addEventListener(
+    'load',
+    () => {
+      probes.set(id, 'ok');
+    },
+    { once: true },
+  );
+  im.addEventListener(
+    'error',
+    () => {
+      probes.set(id, 'bad');
+      for (const listener of listeners) listener();
+    },
+    { once: true },
+  );
   im.src = ICONS + id + '.svg';
 }
 export function isBadMark(id: string): boolean {

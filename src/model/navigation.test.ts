@@ -134,7 +134,7 @@ test('Apps on Home: removal, undo, the nine-app cap and the last app', () => {
     error: null,
     entries: [{ appId: 'AbCdEf1234.FamilyApp', name: 'Family', brand: '', icon: '' }],
   });
-  const full = app.state().prefs.home.slice();
+  const full = [...app.state().prefs.home];
   app.keys('down', 'right', 'right');
   app.keys('ok');
   assert.equal(app.state().session.note, 'Home holds nine apps. Remove one first.');

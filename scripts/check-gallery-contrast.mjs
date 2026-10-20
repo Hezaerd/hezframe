@@ -55,7 +55,9 @@ try {
             await page.evaluate(
               ({ layout, end }) =>
                 ShoreQA.nav(
-                  Array(8).fill(layout === 'list' ? (end ? 'down' : 'up') : end ? 'right' : 'left'),
+                  new Array(8).fill(
+                    layout === 'list' ? (end ? 'down' : 'up') : end ? 'right' : 'left',
+                  ),
                 ),
               { layout, end },
             );
@@ -91,7 +93,7 @@ try {
                   y: r.y,
                   width: r.width,
                   height: r.height,
-                  fontSize: parseFloat(style.fontSize),
+                  fontSize: Number.parseFloat(style.fontSize),
                   kind: 'text',
                   text: el.textContent,
                   selected,

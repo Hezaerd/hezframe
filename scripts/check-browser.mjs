@@ -40,14 +40,15 @@ const NAMES = [
 const EXTRA = 'AbCdEf1234.FamilyApp',
   SPOTIFY = 'rJeHak5zRg.Spotify';
 const UNSAFE_NAME = 'Family <img src=x onerror="window.__catalogXss=1"> & TV';
-const CATALOG = IDS.map((id, i) => ({ id, name: NAMES[i], show: true, iconPath: '' })).concat([
+const CATALOG = [
+  ...IDS.map((id, i) => ({ id, name: NAMES[i], show: true, iconPath: '' })),
   { id: EXTRA, name: UNSAFE_NAME, show: true, iconPath: '' },
   { id: SPOTIFY, name: 'Spotify', show: true, iconPath: '' },
   { id: '5b8c3eb16b.BeamCTVDev', name: 'HBO Max', show: true, iconPath: '' },
   { id: 'MWTwhmvLFt.FrameHome', name: 'CleanFrame', show: true },
   { id: 'AbCdEf1234.worker', name: 'Background worker', show: true },
   { id: 'com.samsung.tv.cobalt-yt', name: 'YouTube', show: true },
-]);
+];
 const walls = JSON.parse(readFileSync(root + 'app/assets/wallpapers/SOURCES.json', 'utf8'));
 const out = root + '.local/qa/';
 mkdirSync(out, { recursive: true });
@@ -83,7 +84,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 const baseline = (patch = {}) => ({
   wallpaperConfigVersion: 1,
   hezframeVersion: 1,
-  dock: PRIMARY.slice(),
+  dock: [...PRIMARY],
   wallpaper: walls[0].id,
   mode: 'fixed',
   lastApp: 'netflix',
@@ -99,7 +100,7 @@ function check(name, pass, detail) {
   report.checks.push(result);
   if (!pass) {
     report.failures.push(result);
-    throw Error(name + (detail ? ': ' + JSON.stringify(detail).slice(0, 500) : ''));
+    throw new Error(name + (detail ? ': ' + JSON.stringify(detail).slice(0, 500) : ''));
   }
 }
 async function run(name, fn) {
@@ -228,7 +229,7 @@ function installHarness({
 async function page(options = {}) {
   current = await preview.browser.newPage({ viewport: { width: 1920, height: 1080 } });
   const owner = current;
-  current.setDefaultTimeout(10000);
+  current.setDefaultTimeout(10_000);
   const expected = [];
   current.__expectedFailures = expected;
   current.on('pageerror', (error) => report.pageErrors.push({ section, error: error.message }));
@@ -246,7 +247,7 @@ async function page(options = {}) {
   await current.addInitScript(installHarness, {
     mock: true,
     catalog: CATALOG,
-    minuteMs: 60000,
+    minuteMs: 60_000,
     seed: baseline(),
     ...options,
   });
@@ -262,12 +263,12 @@ const ready = () =>
   current.waitForFunction(
     () => window.ShoreQA && typeof ShoreQA.ready === 'function' && ShoreQA.ready(),
     null,
-    { timeout: 15000 },
+    { timeout: 15_000 },
   );
 const nav = (...keys) => call('nav', keys);
 async function act(action) {
   const result = await call('activate', action);
-  if (result === null || result === false) throw Error('Action unavailable: ' + action);
+  if (result === null || result === false) throw new Error('Action unavailable: ' + action);
   return result;
 }
 async function scene(name) {
@@ -288,9 +289,9 @@ async function group(name) {
 const settingsSnapshot = () =>
   current.evaluate(() => {
     const s = ShoreQA.state();
-    const rendered = [...document.getElementById('stage').classList]
+    const rendered = [...document.querySelector('#stage').classList]
       .filter((c) => /^(bg|l|a|u|f|m|font)-/.test(c))
-      .sort();
+      .toSorted();
     return {
       stored: localStorage.getItem('cleanframe.home.v1'),
       committed: s.committed,
@@ -304,9 +305,9 @@ const choice = (axis, value) => act('choice.' + axis + '.' + value);
 const radios = () =>
   current.evaluate(() =>
     [...document.querySelectorAll('#stage [role="radio"]')]
-      .filter((e) => e.getClientRects().length && getComputedStyle(e).visibility !== 'hidden')
+      .filter((e) => e.getClientRects().length > 0 && getComputedStyle(e).visibility !== 'hidden')
       .map((e) => ({
-        action: e.getAttribute('data-action'),
+        action: e.dataset.action,
         checked: e.getAttribute('aria-checked'),
         disabled: e.getAttribute('aria-disabled') === 'true',
         focused: e.classList.contains('is-focus'),
@@ -333,7 +334,7 @@ async function unselectedChoice() {
     const radio = await focusedChoice();
     if (radio && radio.checked === 'false' && !radio.disabled) return radio;
   }
-  throw Error('Remote could not reach an unselected choice');
+  throw new Error('Remote could not reach an unselected choice');
 }
 async function walkEnabledChoices() {
   const visited = [];
@@ -355,8 +356,8 @@ async function walkEnabledChoices() {
       const action = ShoreQA.state().focusAction;
       const el = [...document.querySelectorAll('#stage [data-action]')].find(
         (e) =>
-          e.getAttribute('data-action') === action &&
-          e.getClientRects().length &&
+          e.dataset.action === action &&
+          e.getClientRects().length > 0 &&
           getComputedStyle(e).visibility !== 'hidden',
       );
       return {
@@ -368,7 +369,7 @@ async function walkEnabledChoices() {
     });
     visited.push(focus.action);
     if (!focus.exists || focus.disabled || focus.count !== 1)
-      throw Error(
+      throw new Error(
         'Remote ' + direction + ' focused an unavailable choice: ' + JSON.stringify(focus),
       );
   }
@@ -398,7 +399,7 @@ const wallpaperRowVisible = (id) =>
 const wallpaperSaved = () =>
   current.evaluate(() => {
     const s = ShoreQA.state(),
-      bg = document.getElementById('sheetBg'),
+      bg = document.querySelector('#sheetBg'),
       veil = document.querySelector('.sheet-veil');
     const bgStyle = getComputedStyle(bg),
       veilStyle = getComputedStyle(veil);
@@ -419,18 +420,21 @@ const wallpaperSaved = () =>
 const wallpaperApplied = () =>
   current
     .locator('.wallpaper-choice[aria-checked="true"]')
-    .evaluateAll((elements) => elements.map((e) => e.getAttribute('data-action')));
+    .evaluateAll((elements) => elements.map((e) => e.dataset.action));
 const wallpaperBundle = () =>
   current.evaluate(() =>
     Object.fromEntries(
       ['photo', 'matImg', 'phFieldImg', 'phFieldImgAlt', 'utFieldImg', 'utFieldImgAlt'].map(
-        (id) => [id, document.getElementById(id).currentSrc || document.getElementById(id).src],
+        (id) => [
+          id,
+          document.querySelector(`#${id}`).currentSrc || document.querySelector(`#${id}`).src,
+        ],
       ),
     ),
   );
 const previewFrame = () =>
   current.evaluate(() => {
-    const e = document.getElementById('scene'),
+    const e = document.querySelector('#scene'),
       r = e.getBoundingClientRect(),
       css = getComputedStyle(e);
     return {
@@ -450,9 +454,9 @@ const wallpaperListGeometry = () =>
     const fullyVisible = [],
       partlyVisible = [],
       clippedParts = [];
-    rows.forEach((row) => {
+    for (const row of rows) {
       const r = row.getBoundingClientRect(),
-        action = row.getAttribute('data-action');
+        action = row.dataset.action;
       const visible = getComputedStyle(row).visibility !== 'hidden';
       if (visible && r.bottom > bounds.top + 1 && r.top < bounds.bottom - 1)
         partlyVisible.push(action);
@@ -475,7 +479,7 @@ const wallpaperListGeometry = () =>
         name.getBoundingClientRect().right > tick.getBoundingClientRect().left + 1
       )
         clippedParts.push(action);
-    });
+    }
     return {
       fullyVisible,
       partlyVisible,
@@ -574,7 +578,7 @@ try {
     const s = await state();
     check(
       'Invalid values recover usable bounded Home',
-      s.dock.length >= 1 &&
+      s.dock.length > 0 &&
         s.dock.length <= 9 &&
         walls.some((w) => w.id === s.wallpaper) &&
         ['fixed', 'open', '5', '15', '60'].includes(s.mode),
@@ -665,7 +669,7 @@ try {
     await current.waitForFunction(() => ShoreQA.where().view === 'message');
     check(
       'Launch failure is shown',
-      /could not|unavailable|try again/i.test(await current.locator('#stage').innerText()),
+      /could not|unavailable|try again/i.test(await current.locator('#stage').textContent()),
     );
   });
   await run('Catalogue failure and retry', async () => {
@@ -685,7 +689,7 @@ try {
   await run('Native icon and failed-image fallback', async () => {
     await page({
       catalog: CATALOG.map((a) =>
-        a.id === EXTRA ? { ...a, iconPath: '/home/assets/icons/netflix.svg' } : a,
+        a.id === EXTRA ? Object.assign(a, { iconPath: '/home/assets/icons/netflix.svg' }) : a,
       ),
     });
     await library();
@@ -785,7 +789,7 @@ try {
     check('Back cancels unfinished move', same((await state()).dock, start));
     await act('editor.move.netflix');
     await nav('down', 'ok');
-    const moved = start.slice();
+    const moved = [...start];
     [moved[1], moved[2]] = [moved[2], moved[1]];
     check('Placed move persists immediately', same((await stored()).dock, moved));
     await act('editor.add.' + EXTRA);
@@ -816,7 +820,7 @@ try {
     );
     check(
       'Editor has no Save action',
-      !(await current.locator('#stage').innerText()).match(/\bSave\b/),
+      !/\bSave\b/.test(await current.locator('#stage').innerText()),
     );
   });
   await run('Actual storage failures are atomic', async () => {
@@ -833,7 +837,7 @@ try {
     );
     check(
       'Failed write gives visible feedback',
-      /not saved|couldn.t save|tries again/i.test(await current.locator('#stage').innerText()),
+      /not saved|couldn.t save|tries again/i.test(await current.locator('#stage').textContent()),
     );
     await current.evaluate(() => {
       window.__failWrites = false;
@@ -924,11 +928,11 @@ try {
         await current.setViewportSize({ width, height: (width * 9) / 16 });
         await look({ layout });
         await current.waitForFunction(
-          (w) => Math.abs(document.getElementById('stage').getBoundingClientRect().width - w) < 1,
+          (w) => Math.abs(document.querySelector('#stage').getBoundingClientRect().width - w) < 1,
           width,
         );
         const g = await current.evaluate(() => {
-          const b = document.getElementById('stage').getBoundingClientRect();
+          const b = document.querySelector('#stage').getBoundingClientRect();
           return {
             x: b.x,
             y: b.y,
@@ -983,8 +987,8 @@ try {
     check(
       'Overview has all six settings groups',
       same(
-        (await call('actions')).filter((a) => expected.includes(a)).sort(),
-        expected.slice().sort(),
+        (await call('actions')).filter((a) => expected.includes(a)).toSorted(),
+        [...expected].toSorted(),
       ),
     );
     const specs = {
@@ -1006,8 +1010,8 @@ try {
         check(
           name + ' shows every ' + axis + ' choice together',
           same(
-            rows.map((r) => r.action).sort(),
-            values.map((v) => 'choice.' + axis + '.' + v).sort(),
+            rows.map((r) => r.action).toSorted(),
+            values.map((v) => 'choice.' + axis + '.' + v).toSorted(),
           ),
           rows,
         );
@@ -1045,8 +1049,8 @@ try {
     check(
       'All five rotation modes are visible together',
       same(
-        rotationRows.map((r) => r.action).sort(),
-        ['fixed', 'open', '5', '15', '60'].map((v) => 'rotation.' + v).sort(),
+        rotationRows.map((r) => r.action).toSorted(),
+        ['fixed', 'open', '5', '15', '60'].map((v) => 'rotation.' + v).toSorted(),
       ),
       rotationRows,
     );
@@ -1090,13 +1094,13 @@ try {
         visited.add((await state()).focusAction);
         const after = await settingsSnapshot();
         if (!same(after, before))
-          throw Error(
+          throw new Error(
             name +
               ' navigation changed committed state, Home preview or storage: ' +
               JSON.stringify({ before, after }),
           );
         if ((await call('where')).focusCount !== 1)
-          throw Error(name + ' navigation did not keep one focus');
+          throw new Error(name + ' navigation did not keep one focus');
       }
       check(name + ' arrows browse choices without preview or storage writes', visited.size > 1, [
         ...visited,
@@ -1538,19 +1542,17 @@ try {
     for (const width of [1920, 1280]) {
       await current.setViewportSize({ width, height: (width * 9) / 16 });
       await current.waitForFunction(
-        (w) => Math.abs(document.getElementById('stage').getBoundingClientRect().width - w) < 1,
+        (w) => Math.abs(document.querySelector('#stage').getBoundingClientRect().width - w) < 1,
         width,
       );
       for (const name of ['background', 'layout', 'typography', 'focus', 'samsung', 'rotation']) {
         await group(name === 'rotation' ? 'background' : name);
         if (name === 'rotation') await act('background.rotation');
         const geometry = await current.evaluate(() => {
-          const stage = document.getElementById('stage').getBoundingClientRect();
+          const stage = document.querySelector('#stage').getBoundingClientRect();
           const actions = ShoreQA.actions();
           return [...document.querySelectorAll('#stage [data-action]')]
-            .filter(
-              (e) => actions.includes(e.getAttribute('data-action')) && e.getClientRects().length,
-            )
+            .filter((e) => actions.includes(e.dataset.action) && e.getClientRects().length > 0)
             .map((e) => {
               const r = e.getBoundingClientRect();
               const parts = [...e.querySelectorAll('.setting-name, .setting-tick svg')].map(
@@ -1570,7 +1572,7 @@ try {
                 !tick ||
                 name.getBoundingClientRect().right <= tick.getBoundingClientRect().left + 1;
               return {
-                action: e.getAttribute('data-action'),
+                action: e.dataset.action,
                 inside:
                   r.x >= stage.x - 1 &&
                   r.y >= stage.y - 1 &&
@@ -1634,7 +1636,7 @@ try {
     await current.route('**/*' + target + '-*.jpg', (route) => route.abort('failed'));
     const before = await stored();
     await call('look', { wall: target });
-    await current.waitForFunction(() => !ShoreQA.state().pending, null, { timeout: 15000 });
+    await current.waitForFunction(() => !ShoreQA.state().pending, null, { timeout: 15_000 });
     check(
       'Failed load keeps saved and displayed photo',
       same(await stored(), before) && (await state()).shown.wall === original,
@@ -1651,7 +1653,7 @@ try {
         await look({ layout });
         await current.setViewportSize({ width, height: (width * 9) / 16 });
         await current.waitForFunction(
-          (w) => Math.abs(document.getElementById('stage').getBoundingClientRect().width - w) < 1,
+          (w) => Math.abs(document.querySelector('#stage').getBoundingClientRect().width - w) < 1,
           width,
         );
         await group('background');
@@ -1721,14 +1723,14 @@ try {
     const before = await wallpaperSaved();
     check(
       'Applied wallpaper omits the redundant Apply hint',
-      !/apply.*photo/i.test(await current.locator('#appearanceDesc').innerText()),
+      !/apply.*photo/i.test(await current.locator('#appearanceDesc').textContent()),
     );
     await nav('down');
     await wallpaperSettled(walls[1].id);
     check('A browsed photo is not saved by focus', same(await wallpaperSaved(), before));
     check(
       'Unsaved preview explains the OK action',
-      /apply.*photo/i.test(await current.locator('#appearanceDesc').innerText()),
+      /apply.*photo/i.test(await current.locator('#appearanceDesc').textContent()),
     );
     await nav('ok');
     await ready();
@@ -1743,7 +1745,7 @@ try {
     );
     check(
       'Successful apply clears its redundant Apply hint',
-      !/apply.*photo/i.test(await current.locator('#appearanceDesc').innerText()),
+      !/apply.*photo/i.test(await current.locator('#appearanceDesc').textContent()),
     );
     check(
       'Applied photo updates the committed Settings backdrop',
@@ -1804,14 +1806,14 @@ try {
     );
     check(
       'Back still shows its return hint',
-      /background|return/i.test(await current.locator('#appearanceDesc').innerText()),
+      /background|return/i.test(await current.locator('#appearanceDesc').textContent()),
     );
     await nav('down');
     check(
       'Down from Back restores the current candidate',
       (await state()).focusAction === 'wallpaper.choose.' + walls[0].id,
     );
-    await nav(...Array(walls.length - 1).fill('down'));
+    await nav(...new Array(walls.length - 1).fill('down'));
     await wallpaperSettled(walls.at(-1).id);
     await wallpaperRowVisible(walls.at(-1).id);
     const end = await wallpaperListGeometry();
@@ -1839,7 +1841,7 @@ try {
       (await state()).focusAction === 'wallpaper.choose.' + walls.at(-1).id,
     );
     const top = (await state()).wallpaperPicker.top;
-    await nav(...Array(walls.length - 1 - top).fill('up'));
+    await nav(...new Array(walls.length - 1 - top).fill('up'));
     await wallpaperSettled(walls[top].id);
     await nav('up');
     await wallpaperSettled(walls[top - 1].id);
@@ -1848,7 +1850,7 @@ try {
       (await state()).focusAction === 'wallpaper.choose.' + walls[top - 1].id &&
         (await state()).view === 'wallpaper',
     );
-    await nav(...Array(top - 1).fill('up'));
+    await nav(...new Array(top - 1).fill('up'));
     await wallpaperSettled(walls[0].id);
     await wallpaperRowVisible(walls[0].id);
     const start = await wallpaperListGeometry();
@@ -1997,8 +1999,9 @@ try {
         await current.waitForFunction(
           () => !!ShoreQA.state().pending && !!ShoreQA.state().wallpaperPicker.applyPending,
         );
-        if (back === 'remote') await nav('back');
-        else await current.locator('[data-action="wallpaper.back"]').click();
+        await (back === 'remote'
+          ? nav('back')
+          : current.locator('[data-action="wallpaper.back"]').click());
         await ready();
         check(
           back + ' Back cancels pending apply and returns to Wallpaper row',
@@ -2043,7 +2046,7 @@ try {
       check(
         'Failed candidate remains identified for retry',
         (await state()).wallpaperPicker.candidate === target &&
-          /couldn.t|failed|try again/i.test(await current.locator('#appearance').innerText()),
+          /couldn.t|failed|try again/i.test(await current.locator('#appearance').textContent()),
       );
       await current.unroute(pattern);
       await act('wallpaper.retry');
@@ -2119,7 +2122,7 @@ try {
       (await state()).shown.wall === target &&
         Object.values(await wallpaperBundle()).every((src) => src.includes('/' + target)) &&
         (await state()).wallpaperPicker.candidate === walls[3].id &&
-        (await current.locator('#appearance').innerText()).includes(walls[3].name),
+        (await current.locator('#appearance').textContent()).includes(walls[3].name),
     );
     await current.evaluate(() => {
       __failWrites = false;
@@ -2151,7 +2154,7 @@ try {
       );
       return slot && slot.classList.contains('is-missing');
     }, target.id);
-    await nav(...Array(5).fill('down'));
+    await nav(...new Array(5).fill('down'));
     await wallpaperSettled(target.id);
     const fallback = await current.evaluate((id) => {
       const row = document.querySelector('[data-action="wallpaper.choose.' + id + '"]'),
@@ -2245,7 +2248,7 @@ try {
     check('Photo List rotates too', (await state()).look.layout === 'list');
     await current.evaluate(() => {
       __setHidden(true);
-      document.getElementById('stage').blur();
+      document.querySelector('#stage').blur();
       __setHidden(false);
       window.dispatchEvent(new Event('focus'));
     });
@@ -2277,13 +2280,13 @@ try {
     await current.waitForFunction(() => ShoreQA.where().view === 'message');
     check(
       'Browser launch honestly requires TV',
-      /TV/.test(await current.locator('#stage').innerText()),
+      /TV/.test(await current.locator('#stage').textContent()),
     );
     await nav('back');
     await library();
     check(
       'Browser All Apps has no installed fixtures',
-      /TV/.test(await current.locator('#stage').innerText()) &&
+      /TV/.test(await current.locator('#stage').textContent()) &&
         !(await current.locator('[data-action^="apps.open."]').count()),
     );
   });
@@ -2309,4 +2312,4 @@ console.log(
     report.failures.length +
     ' failure(s). Report: .local/qa/checks.json',
 );
-if (report.failures.length) process.exitCode = 1;
+if (report.failures.length > 0) process.exitCode = 1;

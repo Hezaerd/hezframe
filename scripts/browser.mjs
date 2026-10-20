@@ -12,7 +12,7 @@ export const appSources = () =>
   readdirSync(root + 'src', { recursive: true })
     .map((f) => 'src/' + String(f).split('\\').join('/'))
     .filter((f) => /\.tsx?$/.test(f) && !/\.test(-support)?\.ts$/.test(f))
-    .sort();
+    .toSorted();
 
 export async function openPreview({ publicFonts = false } = {}) {
   const args = ['scripts/preview.py', '--port', '0'];
@@ -29,14 +29,14 @@ export async function openPreview({ publicFonts = false } = {}) {
   try {
     const baseURL = await new Promise((resolve, reject) => {
       let output = '';
-      const timeout = setTimeout(() => reject(Error('Preview startup timed out')), 10000);
+      const timeout = setTimeout(() => reject(new Error('Preview startup timed out')), 10_000);
       server.once('error', (error) => {
         clearTimeout(timeout);
         reject(error);
       });
       server.once('exit', (code) => {
         clearTimeout(timeout);
-        reject(Error('Preview exited: ' + code + ' ' + diagnostics));
+        reject(new Error('Preview exited: ' + code + ' ' + diagnostics));
       });
       server.stdout.on('data', (chunk) => {
         output += chunk;

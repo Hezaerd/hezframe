@@ -59,7 +59,7 @@ const metrics = async () =>
     (await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]),
   );
 const ready = () =>
-  page.waitForFunction(() => window.ShoreQA && ShoreQA.ready(), null, { timeout: 15000 });
+  page.waitForFunction(() => window.ShoreQA && ShoreQA.ready(), null, { timeout: 15_000 });
 const call = (method, ...args) => page.evaluate(([name, a]) => ShoreQA[name](...a), [method, args]);
 async function look(patch) {
   await call('look', patch);
@@ -72,7 +72,7 @@ async function scene(name) {
   await page.waitForTimeout(230);
 }
 const percentile = (list, p) =>
-  [...list].sort((a, b) => a - b)[Math.min(list.length - 1, Math.floor(list.length * p))] || 0;
+  [...list].toSorted((a, b) => a - b)[Math.min(list.length - 1, Math.floor(list.length * p))] || 0;
 async function sample(name, keys, rounds = 4) {
   const before = await metrics();
   const raw = await page.evaluate(
@@ -85,11 +85,10 @@ async function sample(name, keys, rounds = 4) {
         frame;
       const observer =
         typeof PerformanceObserver === 'function'
-          ? new PerformanceObserver((list) =>
-              list
-                .getEntries()
-                .forEach((e) => longTasks.push({ start: e.startTime, duration: e.duration })),
-            )
+          ? new PerformanceObserver((list) => {
+              for (const entry of list.getEntries())
+                longTasks.push({ start: entry.startTime, duration: entry.duration });
+            })
           : null;
       try {
         observer?.observe({ type: 'longtask' });
@@ -371,14 +370,12 @@ try {
   await page.waitForLoadState('networkidle');
   report.gallery = await page.evaluate(
     (start) => ({
-      thumbnailsFetched: [
-        ...new Set(
-          performance
-            .getEntriesByType('resource')
-            .filter((r) => /-thumb\./.test(r.name))
-            .map((r) => r.name),
-        ),
-      ].length,
+      thumbnailsFetched: new Set(
+        performance
+          .getEntriesByType('resource')
+          .filter((r) => /-thumb\./.test(r.name))
+          .map((r) => r.name),
+      ).size,
       images: document.images.length,
       nodes: document.querySelectorAll('*').length,
       newPhotoResources: performance
@@ -395,7 +392,7 @@ try {
     'Photo selector has bounded thumbnails and only the requested full preview bundle',
     report.gallery.images <= report.memoryAfter.images.elements + walls.length + 2 &&
       report.gallery.newPhotoResources
-        .filter((url) => !/-thumb\.jpg$/.test(url))
+        .filter((url) => !url.endsWith('-thumb.jpg'))
         .every(
           (url) =>
             url.includes('/' + report.gallery.shown + '.') ||
@@ -454,4 +451,4 @@ console.log(
     report.warnings.length +
     ' frame-budget observations. Report: .local/qa/performance/production-performance.json',
 );
-if (report.failures.length) process.exitCode = 1;
+if (report.failures.length > 0) process.exitCode = 1;

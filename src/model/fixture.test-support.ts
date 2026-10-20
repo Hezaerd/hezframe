@@ -35,7 +35,7 @@ export const env = readEnv(
     },
     document: { documentElement: { style: { webkitMaskImage: '' } } },
   },
-  60000,
+  60_000,
 );
 
 export const saved = (patch: Record<string, unknown> = {}) => ({
@@ -97,7 +97,7 @@ export function start(
       const e = waiting.findIndex(
         (x) => x.kind === 'loadBundle' || x.kind === 'ensureFont' || x.kind === 'frames',
       );
-      if (e < 0) return;
+      if (e === -1) return;
       const [effect] = waiting.splice(e, 1);
       if (effect.kind === 'loadBundle')
         dispatch({ type: 'bundleLoaded', token: effect.token, bundle: effect.bundle, ok });
@@ -130,7 +130,9 @@ export function start(
     timers,
     dispatch,
     state: () => store.getState(),
-    keys: (...keys: RemoteKey[]) => keys.forEach((key) => dispatch({ type: 'key', key })),
+    keys: (...keys: RemoteKey[]) => {
+      for (const key of keys) dispatch({ type: 'key', key });
+    },
     stored: () => JSON.parse(storage.get(STORAGE_KEY) || 'null'),
     refuseWrites: (v: boolean) => {
       refuse = v;

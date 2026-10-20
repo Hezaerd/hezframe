@@ -95,16 +95,16 @@ const EXTRA_AXES: ChoiceAxis[] = ['cinema', 'crossfade', 'greeting', 'collection
 export function isExtraAxis(
   axis: ChoiceAxis | undefined,
 ): axis is 'cinema' | 'crossfade' | 'greeting' | 'collection' {
-  return !!axis && EXTRA_AXES.indexOf(axis) >= 0;
+  return !!axis && EXTRA_AXES.includes(axis);
 }
 
 export function choice(s: State, axis: ChoiceAxis, value: string, disabled?: boolean): DetailItem {
   let label: string;
   if (axis === 'collection')
-    label = (s.env.collections.filter((c) => c.id === value)[0] || s.env.collections[0]).name;
+    label = (s.env.collections.find((c) => c.id === value) || s.env.collections[0]).name;
   else if (isExtraAxis(axis)) label = value === 'on' ? 'On' : 'Off';
-  else if (axis === 'font') label = FONTS[FONT_IDS.filter((id) => id === value)[0]].name;
-  else if (axis === 'mode') label = MODES.filter((m) => m.id === value)[0].name;
+  else if (axis === 'font') label = FONTS[FONT_IDS.find((id) => id === value)!].name;
+  else if (axis === 'mode') label = MODES.find((m) => m.id === value)!.name;
   else label = value === 'both' ? 'Both' : VALUE_NAMES[value];
   return {
     action: axis === 'mode' ? 'rotation.' + value : 'choice.' + axis + '.' + value,
@@ -280,7 +280,7 @@ export function detailRows(s: State, group: DetailGroup): DetailItem[][] {
   ];
   for (const section of detailSections(s, group)) {
     const enabled = section.items.filter((item) => !item.disabled);
-    if (section.horizontal && enabled.length) rows.push(enabled);
+    if (section.horizontal && enabled.length > 0) rows.push(enabled);
     else for (const item of enabled) rows.push([item]);
   }
   if (s.look.error) rows.push([{ action: 'settings.retry', label: 'Try again', disabled: false }]);
@@ -291,14 +291,14 @@ export function detailLocation(s: State, t: DetailView) {
   const rows = detailRows(s, t.group);
   let row = 0,
     column = 0;
-  rows.forEach((items, r) =>
-    items.forEach((item, c) => {
+  for (const [r, items] of rows.entries()) {
+    for (const [c, item] of items.entries()) {
       if (item.action === t.action) {
         row = r;
         column = c;
       }
-    }),
-  );
+    }
+  }
   return { rows, row, column, item: rows[row][column] };
 }
 
@@ -314,11 +314,11 @@ export const GROUP_AXIS: Partial<Record<DetailGroup, ChoiceAxis>> = {
 
 export function otherGroups(s: State): { recent: AppId[]; rest: AppId[] } {
   const recent = s.prefs.recent.filter((id) => !onHome(s, id) && s.apps.has(id));
-  return { recent, rest: s.catalog.ids.filter((id) => !onHome(s, id) && recent.indexOf(id) < 0) };
+  return { recent, rest: s.catalog.ids.filter((id) => !onHome(s, id) && !recent.includes(id)) };
 }
 export function otherList(s: State): AppId[] {
   const o = otherGroups(s);
-  return o.recent.concat(o.rest);
+  return [...o.recent, ...o.rest];
 }
 export function editorHomeY(i: number): number {
   return i * ED_ROW + (i >= ED_CUT ? 24 : 0);
@@ -327,8 +327,8 @@ export function editorOtherY(s: State, j: number): number {
   const o = otherGroups(s);
   return (
     j * ED_ROW +
-    (o.recent.length ? ED_SEP : 0) +
-    (o.recent.length && j >= o.recent.length ? ED_SEP : 0)
+    (o.recent.length > 0 ? ED_SEP : 0) +
+    (o.recent.length > 0 && j >= o.recent.length ? ED_SEP : 0)
   );
 }
 export function nearestHome(s: State, t: EditorView, count: number): number {
@@ -360,7 +360,7 @@ export function editorEntries(
   let y = 0,
     top = t.top,
     maxTop = 0;
-  if (o.recent.length) {
+  if (o.recent.length > 0) {
     entries.push({ key: 'sep-recent', sep: 'Recently removed', y });
     y += ED_SEP;
   }
@@ -369,7 +369,7 @@ export function editorEntries(
     ys.push(y);
     y += ED_ROW;
   }
-  if (o.recent.length && o.rest.length) {
+  if (o.recent.length > 0 && o.rest.length > 0) {
     entries.push({ key: 'sep-rest', sep: 'Other installed apps', y });
     y += ED_SEP;
   }
@@ -378,8 +378,9 @@ export function editorEntries(
     ys.push(y);
     y += ED_ROW;
   }
-  if (t.zone === 'other' && ys.length) {
-    const yf = ys[t.j] - (o.recent.length && (t.j === 0 || t.j === o.recent.length) ? ED_SEP : 0);
+  if (t.zone === 'other' && ys.length > 0) {
+    const yf =
+      ys[t.j] - (o.recent.length > 0 && (t.j === 0 || t.j === o.recent.length) ? ED_SEP : 0);
     if (yf < top) top = yf;
     if (ys[t.j] + 72 > top + ED_VIEW) {
       const minTop = ys[t.j] + 72 - ED_VIEW;

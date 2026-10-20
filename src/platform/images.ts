@@ -24,8 +24,8 @@ function whenReady(im: HTMLImageElement, done: (ok: boolean) => void): void {
     if (im.naturalWidth) ready();
     else finish(false);
   } else {
-    im.onload = ready;
-    im.onerror = () => finish(false);
+    im.addEventListener('load', ready, { once: true });
+    im.addEventListener('error', () => finish(false), { once: true });
   }
 }
 
@@ -68,8 +68,7 @@ export function createImageLoader() {
   }
   function retain(bundles: (BundleKey | null)[]): void {
     const keep = new Set(bundles.filter((b): b is BundleKey => !!b).map(key));
-    for (const k of Array.from(retained.keys()))
-      if (!keep.has(k) && !loading.has(k)) retained.delete(k);
+    for (const k of retained.keys()) if (!keep.has(k) && !loading.has(k)) retained.delete(k);
   }
   return { load, retain };
 }

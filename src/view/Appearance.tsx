@@ -18,7 +18,7 @@ const LOOK_AXES: string[] = [
   'focus',
   'material',
 ];
-const isLookAxis = (axis: string): axis is keyof Look => LOOK_AXES.indexOf(axis) >= 0;
+const isLookAxis = (axis: string): axis is keyof Look => LOOK_AXES.includes(axis);
 
 interface Choice extends DetailItem {
   focus: boolean;

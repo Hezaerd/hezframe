@@ -4,7 +4,8 @@ import { openPreview, root } from './browser.mjs';
 
 const catalogue = JSON.parse(readFileSync(root + 'app/assets/wallpapers/SOURCES.json', 'utf8'));
 const requested = process.argv[2] ? process.argv[2].split(',') : catalogue.map((w) => w.id);
-if (requested.some((id) => !catalogue.some((w) => w.id === id))) throw Error('Unknown wallpaper');
+if (requested.some((id) => !catalogue.some((w) => w.id === id)))
+  throw new Error('Unknown wallpaper');
 const destination = root + '.local/materials/builder/';
 mkdirSync(destination, { recursive: true });
 // Preserve the reviewed density of the original nine Soft surfaces.
@@ -160,7 +161,7 @@ try {
     console.log(id + ': five registered materials prepared');
   }
   writeFileSync(destination + 'report.json', JSON.stringify(report, null, 2) + '\n');
-  if (report.errors.length) throw Error(report.errors.join('\n'));
+  if (report.errors.length > 0) throw new Error(report.errors.join('\n'));
 } finally {
   await preview.close();
 }

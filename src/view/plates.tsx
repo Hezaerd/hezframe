@@ -108,7 +108,9 @@ function usePair(
     lastCls: initial,
     preparing: false,
   });
-  const refs = [useRef<HTMLDivElement>(null), useRef<HTMLDivElement>(null)];
+  const firstRef = useRef<HTMLDivElement>(null),
+    secondRef = useRef<HTMLDivElement>(null);
+  const refs = [firstRef, secondRef];
   let next = pair;
   if (!request) {
     if (pair.key !== null || pair.rest[0] !== off || pair.rest[1] !== off || pair.lastCls !== off)
@@ -125,10 +127,11 @@ function usePair(
   if (next !== pair) setPair(next);
   useLayoutEffect(() => {
     if (!pair.preparing) return;
-    const incoming = refs[pair.cur].current;
+    const incoming = (pair.cur === 0 ? firstRef : secondRef).current;
     if (incoming) incoming.getBoundingClientRect();
+    // oxlint-disable-next-line react/set-state-in-effect -- A second layout commit starts the measured plate crossfade before paint.
     setPair((p) => ({ ...p, preparing: false }));
-  });
+  }, [pair, firstRef, secondRef]);
   const classes = [0, 1].map((i) =>
     i !== next.cur || !request
       ? next.rest[i]

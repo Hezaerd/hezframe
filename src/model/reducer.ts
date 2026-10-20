@@ -132,31 +132,41 @@ const VISUAL: Action['type'][] = [
   'releaseTimeout',
 ];
 export function rendersAfter(action: Action): boolean {
-  return VISUAL.indexOf(action.type) < 0 && !(action.type === 'visibility' && action.hidden);
+  return !VISUAL.includes(action.type) && !(action.type === 'visibility' && action.hidden);
 }
 
 function writeLabel(d: Draft, intent: CommitIntent): string {
   switch (intent.kind) {
-    case 'remove':
+    case 'remove': {
       return 'Remove ' + app(d, intent.id).name + ' from Home';
-    case 'add':
+    }
+    case 'add': {
       return 'Add ' + app(d, intent.id).name + ' to Home';
-    case 'move':
+    }
+    case 'move': {
       return 'Move ' + app(d, intent.id).name;
-    case 'undo':
+    }
+    case 'undo': {
       return 'Undo ' + intent.entry.label;
-    case 'lastApp':
+    }
+    case 'lastApp': {
       return 'Last app';
-    case 'wallpaper':
+    }
+    case 'wallpaper': {
       return 'Wallpaper ' + wallById(d.env, intent.wall).name;
-    case 'rotation':
+    }
+    case 'rotation': {
       return 'Wallpaper rotation';
-    case 'extra':
+    }
+    case 'extra': {
       return 'Atmosphere';
-    case 'look':
+    }
+    case 'look': {
       return 'Appearance';
-    case 'startup':
+    }
+    case 'startup': {
       return 'Startup';
+    }
     default: {
       const exhaustive: never = intent;
       return exhaustive;
@@ -182,27 +192,32 @@ function persisted(d: Draft, intent: CommitIntent, prefs: Prefs, ok: boolean): v
     d.session.err = writeLabel(d, intent);
   }
   switch (intent.kind) {
-    case 'remove':
+    case 'remove': {
       if (ok) removed(d, intent.id, intent.index, intent.before);
       return;
-    case 'add':
+    }
+    case 'add': {
       if (ok) added(d, intent.id, intent.before);
       return;
-    case 'move':
+    }
+    case 'move': {
       if (ok) moved(d, intent.id, intent.before);
       return;
-    case 'undo':
+    }
+    case 'undo': {
       if (ok) undone(d, intent.entry.label);
       return;
-    case 'lastApp':
+    }
+    case 'lastApp': {
       return;
+    }
     case 'wallpaper': {
       const t = top(d);
       if (ok) wallpaperSaved(d, intent.bundle);
       else if (t.kind === 'wallpaper') failWallpaper(d, t, intent.wall, true, intent.bundle);
       return;
     }
-    case 'rotation':
+    case 'rotation': {
       if (!ok)
         d.look.error = {
           type: 'save',
@@ -211,15 +226,18 @@ function persisted(d: Draft, intent: CommitIntent, prefs: Prefs, ok: boolean): v
           transient: false,
         };
       return;
-    case 'extra':
+    }
+    case 'extra': {
       if (ok) extraSaved(d, intent.axis, intent.value);
       else
         d.look.error = { type: 'save', patch: { [intent.axis]: intent.value }, row: intent.axis };
       return;
-    case 'look':
+    }
+    case 'look': {
       if (ok) lookCommitted(d, intent);
       else lookSaveFailed(d, intent);
       return;
+    }
     default: {
       const exhaustive: never = intent;
       return exhaustive;
@@ -229,26 +247,32 @@ function persisted(d: Draft, intent: CommitIntent, prefs: Prefs, ok: boolean): v
 
 function apply(d: Draft, a: Action): void {
   switch (a.type) {
-    case 'key':
+    case 'key': {
       press(d, a.key);
       return;
-    case 'point':
+    }
+    case 'point': {
       point(d, a.zone, a.index, a.id);
       return;
-    case 'hoverUtil':
+    }
+    case 'hoverUtil': {
       hoverUtil(d, a.index);
       return;
-    case 'look':
+    }
+    case 'look': {
       setLook(d, a.patch, {});
       return;
-    case 'scene':
+    }
+    case 'scene': {
       goScene(d, a.name);
       return;
-    case 'resume':
+    }
+    case 'resume': {
       release(d);
       norm(d);
       return;
-    case 'visibility':
+    }
+    case 'visibility': {
       d.hidden = a.hidden;
       if (a.hidden) d.look.crossfade = null;
       else {
@@ -256,10 +280,12 @@ function apply(d: Draft, a: Action): void {
         norm(d);
       }
       return;
-    case 'persisted':
+    }
+    case 'persisted': {
       persisted(d, a.intent, a.prefs, a.ok);
       return;
-    case 'deviceDone':
+    }
+    case 'deviceDone': {
       release(d);
       if (a.error)
         message(
@@ -269,28 +295,36 @@ function apply(d: Draft, a: Action): void {
           a.error.detail || '',
         );
       return;
-    case 'releaseTimeout':
+    }
+    case 'releaseTimeout': {
       if (d.session.busy === a.token) release(d);
       return;
-    case 'catalogLoaded':
+    }
+    case 'catalogLoaded': {
       catalogLoaded(d, a.request, a.error, a.entries);
       return;
-    case 'bundleLoaded':
+    }
+    case 'bundleLoaded': {
       bundleLoaded(d, a.token, a.bundle, a.ok);
       return;
-    case 'fontResult':
+    }
+    case 'fontResult': {
       fontResult(d, a.token, a.ok, a.reason);
       return;
-    case 'fontsChanged':
+    }
+    case 'fontsChanged': {
       d.fonts = { metrics: a.metrics, unavailable: a.unavailable, ready: a.ready };
       return;
-    case 'lookSettle':
+    }
+    case 'lookSettle': {
       lookSettle(d, a.token);
       return;
-    case 'previewDue':
+    }
+    case 'previewDue': {
       previewDue(d, a.seq, a.wall);
       return;
-    case 'rotate':
+    }
+    case 'rotate': {
       if (rotationActive(d))
         setLook(
           d,
@@ -298,18 +332,23 @@ function apply(d: Draft, a: Action): void {
           { row: 'bg' },
         );
       return;
-    case 'reflowEnded':
+    }
+    case 'reflowEnded': {
       if (d.look.reflow === a.token) d.look.reflow = 0;
       return;
-    case 'fontSwitchEnded':
+    }
+    case 'fontSwitchEnded': {
       if (d.look.fontSwitch === a.token) d.look.fontSwitch = 0;
       return;
-    case 'crossfadeEnded':
+    }
+    case 'crossfadeEnded': {
       if (d.look.crossfade && d.look.crossfade.token === a.token) d.look.crossfade = null;
       return;
-    case 'veil':
+    }
+    case 'veil': {
       d.veil = a.dimmed ? 'dim' : 'clear';
       return;
+    }
     default: {
       const exhaustive: never = a;
       return exhaustive;

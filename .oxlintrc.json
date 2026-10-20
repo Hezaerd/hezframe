@@ -35,13 +35,27 @@
         }
       }
     ],
-    "unicorn/import-style": "warn",
-    "unicorn/max-nested-calls": "warn",
+    "unicorn/import-style": [
+      "warn",
+      {
+        "styles": {
+          "node:path": {
+            "named": true
+          }
+        }
+      }
+    ],
+    "unicorn/max-nested-calls": [
+      "warn",
+      {
+        "max": 5
+      }
+    ],
     "unicorn/new-for-builtins": "warn",
     "unicorn/no-abusive-eslint-disable": "warn",
     "unicorn/no-accessor-recursion": "warn",
     "unicorn/no-anonymous-default-export": "warn",
-    "unicorn/no-array-callback-reference": "warn",
+    "unicorn/no-array-callback-reference": "off",
     "unicorn/no-array-fill-with-reference-type": "warn",
     "unicorn/no-array-for-each": "warn",
     "unicorn/no-array-method-this-argument": "warn",
@@ -65,7 +79,7 @@
     "unicorn/no-magic-array-flat-depth": "warn",
     "unicorn/no-negated-condition": "warn",
     "unicorn/no-negation-in-equality-check": "warn",
-    "unicorn/no-nested-ternary": "warn",
+    "unicorn/no-nested-ternary": "off",
     "unicorn/no-new-array": "warn",
     "unicorn/no-new-buffer": "warn",
     "unicorn/no-null": "off",
@@ -113,7 +127,7 @@
     "unicorn/prefer-dom-node-text-content": "warn",
     "unicorn/prefer-event-target": "warn",
     "unicorn/prefer-export-from": "warn",
-    "unicorn/prefer-global-this": "warn",
+    "unicorn/prefer-global-this": "off",
     "unicorn/prefer-import-meta-properties": "warn",
     "unicorn/prefer-includes": "warn",
     "unicorn/prefer-keyboard-event-key": "warn",
@@ -135,7 +149,7 @@
     "unicorn/prefer-reflect-apply": "warn",
     "unicorn/prefer-regexp-test": "warn",
     "unicorn/prefer-response-static-json": "warn",
-    "unicorn/prefer-set-has": "warn",
+    "unicorn/prefer-set-has": "off",
     "unicorn/prefer-set-size": "warn",
     "unicorn/prefer-single-call": "warn",
     "unicorn/prefer-spread": "warn",
@@ -158,7 +172,8 @@
     "unicorn/switch-case-break-position": "warn",
     "unicorn/text-encoding-identifier-case": "warn",
     "unicorn/throw-new-error": "warn",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "typescript/no-explicit-any": "error"
   },
   "overrides": [
     {
@@ -168,18 +183,20 @@
         "unicorn/no-array-sort": "off",
         "unicorn/no-array-reverse": "off",
         "unicorn/prefer-string-replace-all": "off",
-        "unicorn/prefer-structured-clone": "off"
+        "unicorn/prefer-structured-clone": "off",
+        "unicorn/prefer-dom-node-dataset": "off",
+        "oxc/no-map-spread": "off"
       }
     },
     {
       "files": ["app/*.js"],
       "rules": {
+        "unicorn/consistent-function-scoping": "off",
         "unicorn/catch-error-name": "off",
         "unicorn/consistent-assert": "off",
         "unicorn/consistent-date-clone": "off",
         "unicorn/consistent-empty-array-spread": "off",
         "unicorn/consistent-existence-index-check": "off",
-        "unicorn/consistent-function-scoping": "off",
         "unicorn/consistent-template-literal-escape": "off",
         "unicorn/custom-error-definition": "off",
         "unicorn/empty-brace-spaces": "off",
@@ -319,6 +336,63 @@
         "eslint/no-await-in-loop": "off",
         "eslint/no-underscore-dangle": "off",
         "unicorn/no-await-expression-member": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.mjs"],
+      "rules": {
+        "eslint/no-shadow": "off"
+      }
+    },
+    {
+      "files": ["src/**/*.d.ts"],
+      "rules": {
+        "import/no-unassigned-import": "off"
+      }
+    },
+    {
+      "files": ["scripts/check-browser.mjs"],
+      "rules": {
+        "unicorn/prefer-dom-node-text-content": "off"
+      }
+    },
+    {
+      "files": ["scripts/check-gallery-contrast.mjs"],
+      "rules": {
+        "unicorn/prefer-number-coercion": "off"
+      }
+    },
+    {
+      "files": ["src/view/**/*.tsx"],
+      "rules": {
+        "jsx-a11y/prefer-tag-over-role": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.mjs"],
+      "rules": {
+        "unicorn/consistent-function-scoping": "off"
+      }
+    },
+    {
+      "files": ["scripts/**/*.mjs", "src/**/*.test-support.ts"],
+      "rules": {
+        "unicorn/no-new-array": "off"
+      }
+    },
+    {
+      "files": ["src/view/App.tsx"],
+      "rules": {
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/no-noninteractive-tabindex": "off",
+        "jsx-a11y/no-noninteractive-element-interactions": "off"
+      }
+    },
+    {
+      "files": ["src/view/Home.tsx"],
+      "rules": {
+        "jsx-a11y/no-noninteractive-element-interactions": "off",
+        "jsx-a11y/mouse-events-have-key-events": "off"
       }
     }
   ]

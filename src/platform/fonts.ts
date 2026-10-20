@@ -2,21 +2,22 @@ import { fontRole, type FontRole } from '../model/assets.ts';
 import { FONT_IDS, FONTS } from '../model/tables.ts';
 import type { FaceMetrics, FontId } from '../model/types.ts';
 
-let ctx: CanvasRenderingContext2D | null = null;
-let span: HTMLSpanElement | null = null;
+let measureContext: CanvasRenderingContext2D | null = null;
+let measureSpan: HTMLSpanElement | null = null;
 
-/** A hidden span for optical-size measurements; canvas has no optical-size property. */
+/** A hidden measureSpan for optical-size measurements; canvas has no optical-size property. */
 export function initTextMeasure(doc: Document): void {
-  ctx = doc.createElement('canvas').getContext('2d');
-  span = doc.createElement('span');
-  span.setAttribute('aria-hidden', 'true');
-  span.style.cssText =
+  measureContext = doc.createElement('canvas').getContext('2d');
+  measureSpan = doc.createElement('measureSpan');
+  measureSpan.setAttribute('aria-hidden', 'true');
+  measureSpan.style.cssText =
     'position:absolute;left:-10000px;top:0;visibility:hidden;white-space:pre;font-synthesis:none;';
-  doc.body.appendChild(span);
+  doc.body.append(measureSpan);
 }
 function tools(): { ctx: CanvasRenderingContext2D; span: HTMLSpanElement } {
-  if (!ctx || !span) throw Error('initTextMeasure must run before text is measured');
-  return { ctx, span };
+  if (!measureContext || !measureSpan)
+    throw new Error('initTextMeasure must run before text is measured');
+  return { ctx: measureContext, span: measureSpan };
 }
 
 const ROLE_SIZES: Record<FontRole, number[]> = {
@@ -68,13 +69,14 @@ export interface FontSnapshot {
   ready: boolean;
 }
 type Done = (ok: boolean, reason: string | null) => void;
+const ignoreSnapshot = (_snapshot: FontSnapshot): void => {};
 
 /**
  * Loads Home faces and measures them. Owns the font cache and publishes every change, so the
  * store always holds the metrics that rendering and `ensureFont` decisions use.
  */
 export function createFontService(doc: Document) {
-  let publish: (snapshot: FontSnapshot) => void = () => {};
+  let publish: (snapshot: FontSnapshot) => void = ignoreSnapshot;
   const metrics: Partial<Record<FontId, FaceMetrics>> = {},
     unavailable: Partial<Record<FontId, true>> = {};
   let ready = false,
@@ -88,7 +90,7 @@ export function createFontService(doc: Document) {
 
   // A rejected CSS FontFace cannot load again. Recreate only that family's rules.
   function retryFontFaces(id: FontId): void {
-    for (const sheet of Array.from(doc.styleSheets)) {
+    for (const sheet of doc.styleSheets) {
       let rules: CSSRuleList;
       try {
         rules = sheet.cssRules;
@@ -132,7 +134,7 @@ export function createFontService(doc: Document) {
       return;
     }
     if (unavailable[id]) retryFontFaces(id);
-    if (id !== 'newsreader' && weights.indexOf(f.ui) < 0) weights.push(f.ui);
+    if (id !== 'newsreader' && !weights.includes(f.ui)) weights.push(f.ui);
     let ended = false;
     const finish = (ok: boolean, reason: string, faces?: FontFace[][]) => {
       if (ended) return;

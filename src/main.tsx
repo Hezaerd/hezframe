@@ -13,7 +13,7 @@ import { installQA, presetMinuteMs } from './qa.ts';
 import { createStore, type Store } from './store.ts';
 import { App } from './view/App.tsx';
 
-const container = document.getElementById('root');
+const container = document.querySelector('#root');
 if (!container) throw new Error('Missing HezFrame root');
 initTextMeasure(document);
 
@@ -29,40 +29,47 @@ function run(effect: Effect, store: Store): void {
       store.dispatch({ type: 'persisted', intent: effect.intent, prefs: effect.prefs, ok });
       return;
     }
-    case 'device':
+    case 'device': {
       runDevice(effect.op, (error) =>
         store.dispatch({ type: 'deviceDone', title: effect.title, error }),
       );
       return;
-    case 'loadCatalog':
+    }
+    case 'loadCatalog': {
       loadCatalog((error, entries) =>
         store.dispatch({ type: 'catalogLoaded', request: effect.request, error, entries }),
       );
       return;
-    case 'loadBundle':
+    }
+    case 'loadBundle': {
       images.load(effect.bundle, (ok) =>
         store.dispatch({ type: 'bundleLoaded', token: effect.token, bundle: effect.bundle, ok }),
       );
       return;
-    case 'ensureFont':
+    }
+    case 'ensureFont': {
       fonts.ensureFont(
         effect.font,
         (ok, reason) => store.dispatch({ type: 'fontResult', token: effect.token, ok, reason }),
         (snapshot) => store.dispatch({ type: 'fontsChanged', ...snapshot }),
       );
       return;
-    case 'after':
+    }
+    case 'after': {
       window.setTimeout(() => store.dispatch(effect.action), effect.ms);
       return;
-    case 'frames':
+    }
+    case 'frames': {
       requestAnimationFrame(() => {
         if (effect.count === 1) store.dispatch(effect.action);
         else requestAnimationFrame(() => store.dispatch(effect.action));
       });
       return;
-    case 'wakeCinema':
+    }
+    case 'wakeCinema': {
       wakeCinema();
       return;
+    }
     default: {
       const exhaustive: never = effect;
       return exhaustive;

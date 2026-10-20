@@ -47,7 +47,7 @@ const ZONES: PointZone[] = [
 
 /** The pointer equivalent of OK on a control, read from its data-z, data-i and data-id. */
 export function pointAction(el: Element): Action | null {
-  const zone = ZONES.filter((z) => z === el.getAttribute('data-z'))[0];
+  const zone = ZONES.find((z) => z === el.getAttribute('data-z'));
   return zone
     ? {
         type: 'point',
@@ -133,7 +133,7 @@ function stage(s: State): { className: string; vars: CSSProperties } {
     (adaptive
       ? (['tl', 'tr', 'br'] as const)
           .map((z) =>
-            RUNGS.indexOf(adaptive[z].rung || '') >= 0 ? ' ink-' + z + '-' + adaptive[z].rung : '',
+            RUNGS.includes(adaptive[z].rung || '') ? ' ink-' + z + '-' + adaptive[z].rung : '',
           )
           .join('')
       : '') +
@@ -141,7 +141,7 @@ function stage(s: State): { className: string; vars: CSSProperties } {
     t.kind +
     ' font-' +
     font +
-    (font !== 'manrope' ? ' font-custom' : '') +
+    (font === 'manrope' ? '' : ' font-custom') +
     (s.look.fontSwitch ? ' is-font-switch' : '') +
     (adaptive ? ' has-adaptive-ink adaptive-tl-' + adaptive.tl.pol : '') +
     (!adaptive && shown.clockInk ? ' has-clock-ink' : '') +
@@ -249,9 +249,7 @@ function FocusStatus({
     const root = isSheet(t.kind) ? sheetRef.current : homeRef.current,
       stageEl = stageRef.current;
     if (!isSettingsDetail(t.kind) && text && root && stageEl) {
-      const target = Array.from(root.querySelectorAll('.is-focus[data-action]')).filter(
-        rendered,
-      )[0];
+      const target = [...root.querySelectorAll('.is-focus[data-action]')].find(rendered);
       const parent = target && target.parentElement;
       if (target && parent && !(parent.id === 'utils' && parent.classList.contains('is-icons'))) {
         const photo = s.prefs.layout === 'list' && target.classList.contains('ph-row');
@@ -285,8 +283,9 @@ function FocusStatus({
         };
       }
     }
+    // oxlint-disable-next-line react/set-state-in-effect -- This layout measurement positions the retry line before paint.
     setG((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
-  });
+  }, [s, t.kind, text, homeRef, sheetRef, stageRef]);
   const shown = useLastShown(g, JSON.stringify(g));
   return (
     <div

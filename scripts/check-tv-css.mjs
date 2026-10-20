@@ -6,8 +6,8 @@ import { TV_CHROME_MAJOR } from '../plugins/tizen-widget-assets.mts';
 const root = fileURLToPath(new URL('../dist/web/', import.meta.url));
 const files = readdirSync(root, { recursive: true })
   .filter((name) => name.endsWith('.css'))
-  .sort();
-if (!files.length) throw Error('No packaged CSS found. Run npm run build first.');
+  .toSorted();
+if (files.length === 0) throw new Error('No packaged CSS found. Run npm run build first.');
 
 function serializeDeclarationsSeparately(code, targets) {
   let id = 0;

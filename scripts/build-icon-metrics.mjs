@@ -45,7 +45,7 @@ try {
           }
         }
       }
-      if (right < left || bottom < top) throw Error('Empty icon: ' + id);
+      if (right < left || bottom < top) throw new Error('Empty icon: ' + id);
       const width = right - left + 1,
         height = bottom - top + 1;
       result[id] = { n: size, x: left, y: top, w: width, h: height, fill: ink / (width * height) };

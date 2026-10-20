@@ -60,8 +60,8 @@ export function parseLookPatch(env: Env, raw: unknown): LookPatch {
       if (!w) throw new Error('Unknown wallpaper: ' + v);
       out.wall = w;
     } else if (k === 'font') {
-      const f = FONT_IDS.filter((id) => id === v)[0];
-      if (!f || (f !== 'manrope' && env.privateFonts.indexOf(f) < 0))
+      const f = FONT_IDS.find((id) => id === v);
+      if (!f || (f !== 'manrope' && !env.privateFonts.includes(f)))
         throw new Error('Unavailable font: ' + v);
       out.font = f;
     } else if (k === 'bg') out.bg = member(BG_VALUES, v, k);

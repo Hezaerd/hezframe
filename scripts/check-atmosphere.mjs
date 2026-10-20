@@ -15,7 +15,7 @@ try {
   await page.goto(p.baseURL + '/home/');
   await page.waitForFunction(() => window.ShoreQA && ShoreQA.ready());
   assert.match(
-    await page.locator('.greeting').innerText(),
+    await page.locator('.greeting').textContent(),
     /Good (morning|afternoon|evening), <Hezaerd>/,
   );
   assert.equal(await page.locator('.greeting hezaerd').count(), 0);
@@ -47,7 +47,7 @@ try {
   ]) {
     await page.setViewportSize(viewport);
     await page.waitForFunction(
-      (w) => Math.abs(document.getElementById('stage').getBoundingClientRect().width - w) < 1,
+      (w) => Math.abs(document.querySelector('#stage').getBoundingClientRect().width - w) < 1,
       viewport.width,
     );
     for (const group of ['background', 'atmosphere', 'collections']) {

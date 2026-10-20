@@ -28,7 +28,7 @@ const NAV: Record<string, RemoteKey | undefined> = {
 const SCENES = ['home', 'apps', 'settings', 'appearance', 'editor'] as const;
 const rendered = (el: Element) =>
   el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden';
-const byId = (id: string) => document.getElementById(id);
+const byId = (id: string) => document.querySelector(`#${id}`);
 
 /** Test speed-up preset by the browser checks before the app loads. */
 export function presetMinuteMs(): number {
@@ -38,7 +38,7 @@ export function presetMinuteMs(): number {
       preset !== null &&
       'minuteMs' in preset &&
       Number(preset.minuteMs)) ||
-    60000
+    60_000
   );
 }
 
@@ -59,9 +59,7 @@ export function installQA(store: Store, controllers: Controllers): void {
   };
   const focusedAction = () => {
     const el = root(),
-      found = el
-        ? Array.from(el.querySelectorAll('.is-focus[data-action]')).filter(rendered)[0]
-        : null;
+      found = el ? [...el.querySelectorAll('.is-focus[data-action]')].find(rendered) : null;
     return found ? found.getAttribute('data-action') : null;
   };
   const run = (action: Action) => flushSync(() => store.dispatch(action));
@@ -86,7 +84,7 @@ export function installQA(store: Store, controllers: Controllers): void {
       loading: st.catalog.loading,
       loaded: st.catalog.loaded,
       error: st.catalog.error,
-      ids: st.catalog.ids.slice(),
+      ids: [...st.catalog.ids],
     };
     const metrics = st.fonts.metrics;
     out.fonts = {
@@ -101,7 +99,7 @@ export function installQA(store: Store, controllers: Controllers): void {
     out.crossfading = !!look.crossfade;
     out.rotation = controllers.rotationInfo();
     out.draft =
-      t.kind === 'editor' && t.lifted ? { id: t.lifted.id, order: t.lifted.order.slice() } : null;
+      t.kind === 'editor' && t.lifted ? { id: t.lifted.id, order: [...t.lifted.order] } : null;
     out.settingsGroup =
       t.kind === 'wallpaper' ? 'wallpaper' : t.kind === 'appearance' ? t.group : null;
     out.focusedChoice =
@@ -146,7 +144,7 @@ export function installQA(store: Store, controllers: Controllers): void {
       stage = byId('stage');
     let count = 0,
       name = '';
-    for (const el of stage ? Array.from(stage.querySelectorAll('.is-focus[data-action]')) : []) {
+    for (const el of stage ? [...stage.querySelectorAll('.is-focus[data-action]')] : []) {
       if (!rendered(el)) continue;
       count++;
       if (el.getAttribute('data-action') === action)
@@ -177,9 +175,9 @@ export function installQA(store: Store, controllers: Controllers): void {
     if (action === 'settings.appearance' && t.kind === 'settings')
       action = 'settings.group.background';
     const target = el
-      ? Array.from(el.querySelectorAll('[data-action]')).filter(
+      ? [...el.querySelectorAll('[data-action]')].find(
           (e) => rendered(e) && e.getAttribute('data-action') === action,
-        )[0]
+        )
       : null;
     if (!target) return null;
     const point = pointAction(target);
@@ -223,7 +221,7 @@ export function installQA(store: Store, controllers: Controllers): void {
       return state();
     },
     scene(name: unknown) {
-      const scene = SCENES.filter((n) => n === name)[0];
+      const scene = SCENES.find((n) => n === name);
       if (!scene) throw new Error('Unknown view');
       run({ type: 'scene', name: scene });
       return state();
@@ -231,7 +229,7 @@ export function installQA(store: Store, controllers: Controllers): void {
     actions: () => {
       const el = root();
       return el
-        ? Array.from(el.querySelectorAll('[data-action]'))
+        ? [...el.querySelectorAll('[data-action]')]
             .filter(rendered)
             .map((e) => e.getAttribute('data-action'))
         : [];

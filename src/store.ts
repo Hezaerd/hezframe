@@ -49,7 +49,7 @@ export function createStore(
       } finally {
         draining = false;
       }
-      listeners.forEach((l) => l());
+      for (const listener of listeners) listener();
     },
     subscribe(listener) {
       listeners.add(listener);

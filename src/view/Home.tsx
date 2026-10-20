@@ -8,7 +8,7 @@ import {
   type MouseEvent,
   type RefObject,
 } from 'react';
-import { matSrc } from '../model/assets.ts';
+import { matSrc, px } from '../model/assets.ts';
 import { clamp } from '../model/ids.ts';
 import { homeFont, isSettingsDetail, top } from '../model/state.ts';
 import { PH_HEIGHT, PH_PITCH, PH_TOP, SCRIM_Y, UTILS } from '../model/tables.ts';
@@ -69,13 +69,13 @@ const shallowEqual = (a: object, b: object) =>
   Object.keys(a).every((k) => Object.is(Reflect.get(a, k), Reflect.get(b, k)));
 const nameOf = (h: HomeInput, id: AppId): App => {
   const a = h.apps.get(id);
-  if (!a) throw Error('Unknown app: ' + id);
+  if (!a) throw new Error('Unknown app: ' + id);
   return a;
 };
 
 function Caption({ h }: { h: HomeInput }) {
   const minute = useSyncExternalStore(subscribeMinute, currentMinute);
-  const now = new Date(minute * 60000),
+  const now = new Date(minute * 60_000),
     ts = typeset(h),
     c = h.prefs;
   const hours = now.getHours(),
@@ -103,6 +103,7 @@ function Caption({ h }: { h: HomeInput }) {
         {digits
           ? [...time].map((char, index) =>
               /[0-9]/.test(char) ? (
+                // oxlint-disable-next-line react/no-array-index-key -- Digits are fixed clock positions, not reorderable items.
                 <span className="clock-digit" key={index}>
                   {char}
                 </span>
@@ -133,13 +134,15 @@ function UtilFocusLabel({ geometry }: { geometry: LabelGeometry | null }) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (!geometry) {
+      // oxlint-disable-next-line react/set-state-in-effect -- Reset the measured label crossfade before paint.
       if (armed !== null) setArmed(null);
       return;
     }
     if (armed === geometry.key) return;
     ref.current?.getBoundingClientRect();
+    // oxlint-disable-next-line react/set-state-in-effect -- The style read above prepares this label's opacity transition.
     setArmed(geometry.key);
-  });
+  }, [armed, geometry]);
   const on = !!geometry && armed === geometry.key;
   return (
     <div
@@ -209,8 +212,12 @@ function HomeControls({
 }) {
   const store = useStore(),
     c = h.prefs;
-  const buttons = [useRef<HTMLButtonElement>(null), useRef<HTMLButtonElement>(null)],
-    labels = [useRef<HTMLSpanElement>(null), useRef<HTMLSpanElement>(null)];
+  const firstButton = useRef<HTMLButtonElement>(null),
+    secondButton = useRef<HTMLButtonElement>(null);
+  const firstLabel = useRef<HTMLSpanElement>(null),
+    secondLabel = useRef<HTMLSpanElement>(null);
+  const buttons = [firstButton, secondButton],
+    labels = [firstLabel, secondLabel];
   const [overlay, setOverlay] = useState<{
     label: LabelGeometry | null;
     lens: { key: string; placement: Placement } | null;
@@ -218,7 +225,7 @@ function HomeControls({
   const iconsOnly = c.controls === 'icons',
     focused = h.zone === 'util' ? h.u : -1;
   useLayoutEffect(() => {
-    const button = focused >= 0 ? buttons[focused].current : null,
+    const button = focused >= 0 ? (focused === 0 ? firstButton : secondButton).current : null,
       scene = sceneRef.current;
     let label: LabelGeometry | null = null,
       lens: { key: string; placement: Placement } | null = null;
@@ -246,7 +253,8 @@ function HomeControls({
         if (list) {
           const labelLeft = label
             ? sr.left + label.left * scale
-            : (labels[focused].current?.getBoundingClientRect().left ?? r.left);
+            : ((focused === 0 ? firstLabel : secondLabel).current?.getBoundingClientRect().left ??
+              r.left);
           x = (labelLeft - sr.left) / scale - 24;
           width = 1800 - x;
         } else {
@@ -259,10 +267,22 @@ function HomeControls({
         };
       }
     }
+    // oxlint-disable-next-line react/set-state-in-effect -- Control bounds determine the glass lens and label position before paint.
     setOverlay((prev) =>
       JSON.stringify(prev) === JSON.stringify({ label, lens }) ? prev : { label, lens },
     );
-  });
+  }, [
+    h,
+    focused,
+    iconsOnly,
+    sceneRef,
+    c.focus,
+    c.layout,
+    firstButton,
+    secondButton,
+    firstLabel,
+    secondLabel,
+  ]);
   const hover = (ev: MouseEvent<HTMLElement>) => {
     const b = ev.target instanceof Element ? ev.target.closest('[data-z]') : null;
     if (
@@ -346,7 +366,7 @@ const DockTile = memo(function DockTile(p: TileProps) {
         (p.focus ? ' is-focus' : '') +
         (p.sel ? ' is-sel' : '') +
         (p.partial ? ' is-partial' : '') +
-        (!a.mark ? ' is-text' : '') +
+        (a.mark ? '' : ' is-text') +
         (p.press ? ' is-press' : '') +
         (p.outside ? ' is-outside-icon' : '') +
         (p.focus && p.status ? ' has-local-status' : '')
@@ -435,7 +455,6 @@ const Dock = memo(function Dock({ h }: { h: HomeInput }) {
   const tileFocus = h.zone === 'apps',
     tileSel = h.zone === 'util' || h.zone === 'preview',
     out = outside.split('|');
-  const px = (v: number) => v + 'px';
   return (
     <>
       <div
@@ -503,15 +522,15 @@ const Dock = memo(function Dock({ h }: { h: HomeInput }) {
             <div
               className={
                 'plate' +
-                (!active
-                  ? ''
-                  : h.zone === null
+                (active
+                  ? h.zone === null
                     ? ''
                     : tileFocus
                       ? ' on-focus'
                       : tileSel
                         ? ' on-sel'
-                        : '')
+                        : ''
+                  : '')
               }
               id="plate"
               style={
@@ -533,7 +552,7 @@ const Dock = memo(function Dock({ h }: { h: HomeInput }) {
                   sel={tileSel && i === anchor}
                   partial={g.broad && (left - off < -1 || left + g.tw - off > g.shelf + 1)}
                   press={h.press === id}
-                  outside={out.indexOf(id) >= 0}
+                  outside={out.includes(id)}
                   status={h.status}
                   size={size}
                   labelTop={(c.apps === 'text' ? 28 : 128) + ts.shift('primary', size)}

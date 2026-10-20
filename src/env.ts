@@ -134,11 +134,11 @@ export function readEnv(win: RuntimeGlobals, minuteMs: number): Env {
     wallConfig = record(config.wallpapers);
   const rotation: WallId[] = [];
   for (const id of Array.isArray(wallConfig.playlist) ? wallConfig.playlist : [])
-    if (inGallery(id, gallery) && rotation.indexOf(id) < 0) rotation.push(id);
-  if (!rotation.length) for (const w of walls) rotation.push(w.id);
+    if (inGallery(id, gallery) && !rotation.includes(id)) rotation.push(id);
+  if (rotation.length === 0) for (const w of walls) rotation.push(w.id);
 
   const rawCollections: { id: string; name: string; wallpapers: WallId[] }[] = [
-    { id: 'all', name: 'All nature', wallpapers: rotation.slice() },
+    { id: 'all', name: 'All nature', wallpapers: [...rotation] },
   ];
   for (const c of Array.isArray(wallConfig.collections) ? wallConfig.collections : []) {
     if (
@@ -150,8 +150,8 @@ export function readEnv(win: RuntimeGlobals, minuteMs: number): Env {
       continue;
     const ids: WallId[] = [];
     for (const id of Array.isArray(c.wallpapers) ? c.wallpapers : [])
-      if (inGallery(id, gallery) && ids.indexOf(id) < 0) ids.push(id);
-    if (ids.length)
+      if (inGallery(id, gallery) && !ids.includes(id)) ids.push(id);
+    if (ids.length > 0)
       rawCollections.push({ id: c.id, name: String(c.name || c.id).slice(0, 32), wallpapers: ids });
   }
   const collectionIds = new Set(rawCollections.map((c) => c.id));

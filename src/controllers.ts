@@ -11,7 +11,7 @@ const KEYS: Record<number, RemoteKey | undefined> = {
   13: 'ok',
   27: 'back',
   8: 'back',
-  10009: 'back',
+  10_009: 'back',
   461: 'back',
 };
 

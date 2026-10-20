@@ -5,9 +5,9 @@ export function subscribeMinute(listener: () => void): () => void {
     clearTimeout(timer);
     if (document.hidden) return;
     listener();
-    timer = window.setTimeout(tick, 60000 - (Date.now() % 60000) + 30);
+    timer = window.setTimeout(tick, 60_000 - (Date.now() % 60_000) + 30);
   };
-  timer = window.setTimeout(tick, 60000 - (Date.now() % 60000) + 30);
+  timer = window.setTimeout(tick, 60_000 - (Date.now() % 60_000) + 30);
   document.addEventListener('visibilitychange', tick);
   window.addEventListener('focus', tick);
   return () => {
@@ -18,5 +18,5 @@ export function subscribeMinute(listener: () => void): () => void {
 }
 
 export function currentMinute(): number {
-  return Math.floor(Date.now() / 60000);
+  return Math.floor(Date.now() / 60_000);
 }

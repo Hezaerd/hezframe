@@ -144,7 +144,7 @@ function AppsSheet({ s, t, status }: { s: State; t: AppsView; status: boolean })
     <>
       <h2 className="s-title">All apps</h2>
       <p className="s-sub">
-        {c.loading ? 'Loading installed apps…' : c.error || (!n ? 'No installed apps found.' : '')}
+        {c.loading ? 'Loading installed apps…' : c.error || (n ? '' : 'No installed apps found.')}
       </p>
       <div className={'s-head' + (t.zone === 'head' ? ' is-awake' : '')}>
         <HeadButtons list={head} focus={t.zone === 'head' ? 0 : -1} prefix="apps" status={status} />
@@ -169,7 +169,7 @@ function AppsSheet({ s, t, status }: { s: State; t: AppsView; status: boolean })
                 app={app(s, id)}
                 i={i}
                 focus={t.zone === 'grid' && i === t.i}
-                home={s.prefs.home.indexOf(id) >= 0}
+                home={s.prefs.home.includes(id)}
                 status={status}
                 light={s.prefs.bg === 'light'}
                 revision={c.revision}
@@ -191,7 +191,7 @@ function AppsSheet({ s, t, status }: { s: State; t: AppsView; status: boolean })
   );
 }
 
-function undoCaption(s: State): string {
+function undoActionCaption(s: State): string {
   const u = s.session.undo[s.session.undo.length - 1];
   return u ? 'Undo ' + u.label.charAt(0).toLowerCase() + u.label.slice(1) : 'Nothing to undo';
 }
@@ -199,17 +199,16 @@ function undoCaption(s: State): string {
 function EditorSheet({ s, t, status }: { s: State; t: EditorView; status: boolean }) {
   const H = t.lifted ? t.lifted.order : s.prefs.home,
     o = otherGroups(s),
-    list = o.recent.concat(o.rest),
+    list = [...o.recent, ...o.rest],
     full = s.prefs.home.length >= CAP;
   const c = s.catalog,
     note = s.session.note,
     name = (id: (typeof H)[number]) => app(s, id).name;
-  const hint = c.error
-    ? c.error
-    : c.loading
+  const hint =
+    c.error || c.loading
       ? 'Loading installed apps…'
       : t.zone === 'head' && t.h === 0
-        ? undoCaption(s)
+        ? undoActionCaption(s)
         : t.zone === 'home' && t.part === 'remove'
           ? H.length <= 1
             ? LAST
@@ -241,12 +240,12 @@ function EditorSheet({ s, t, status }: { s: State; t: EditorView; status: boolea
       <div className={'s-head' + (t.zone === 'head' ? ' is-awake' : '')}>
         <HeadButtons
           list={[
-            ['undo', 'Undo', s.session.undo.length ? '' : 'is-idle', 'undo'],
+            ['undo', 'Undo', s.session.undo.length > 0 ? '' : 'is-idle', 'undo'],
             ['done', 'Done', '', 'check'],
           ]}
           focus={t.zone === 'head' ? t.h : -1}
           prefix="editor"
-          undoCaption={undoCaption(s)}
+          undoCaption={undoActionCaption(s)}
           status={status}
         />
       </div>
@@ -328,7 +327,7 @@ function EditorSheet({ s, t, status }: { s: State; t: EditorView; status: boolea
       <div className="ed-other-view">
         <div className="ed-other" style={{ transform: 'translate3d(0,' + -t.top + 'px,0)' }}>
           {entryOrder.map((key) => {
-            const it = entries.filter((e) => e.key === key)[0],
+            const it = entries.find((e) => e.key === key)!,
               end = it.y + (it.sep ? ED_SEP : 72);
             const style = {
               transform: 'translate3d(0,' + it.y + 'px,0)',
@@ -354,6 +353,7 @@ function EditorSheet({ s, t, status }: { s: State; t: EditorView; status: boolea
                 }
                 style={style}
                 role="button"
+                aria-label={a.name}
                 data-z="other"
                 data-i={j}
                 data-action={'editor.add.' + it.id}
@@ -385,7 +385,7 @@ function EditorSheet({ s, t, status }: { s: State; t: EditorView; status: boolea
       </div>
       <div
         className={'ed-origin' + (t.lifted && t.lifted.from !== t.i ? ' is-on' : '')}
-        style={origin !== null ? { transform: 'translate3d(0,' + origin + 'px,0)' } : undefined}
+        style={origin === null ? undefined : { transform: 'translate3d(0,' + origin + 'px,0)' }}
       ></div>
       <div className={'row-cue editor-before' + (before ? ' is-on' : '')} aria-hidden="true">
         <Icon name="up" />

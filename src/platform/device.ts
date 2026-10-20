@@ -17,7 +17,7 @@ declare global {
 
 function adapter(): FrameDevice {
   const d = window.FrameDevice;
-  if (!d) throw Error('FrameDevice is not loaded');
+  if (!d) throw new Error('FrameDevice is not loaded');
   return d;
 }
 
