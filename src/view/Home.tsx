@@ -2,6 +2,7 @@ import {
   memo,
   useCallback,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -224,14 +225,17 @@ function HomeControls({
   }>({ label: null, lens: null });
   const iconsOnly = c.controls === 'icons',
     focused = h.zone === 'util' ? h.u : -1;
+  const ts = useMemo(
+    () => typeset({ font: h.font, metrics: h.metrics, prefs: c, apps: h.apps }),
+    [h.font, h.metrics, c, h.apps],
+  );
   useLayoutEffect(() => {
     const button = focused >= 0 ? (focused === 0 ? firstButton : secondButton).current : null,
       scene = sceneRef.current;
     let label: LabelGeometry | null = null,
       lens: { key: string; placement: Placement } | null = null;
     if (button && scene && (iconsOnly || c.focus === 'glass')) {
-      const ts = typeset(h),
-        sr = scene.getBoundingClientRect(),
+      const sr = scene.getBoundingClientRect(),
         scale = sr.width / 1920 || 1,
         list = c.layout === 'list',
         r = button.getBoundingClientRect();
@@ -272,7 +276,9 @@ function HomeControls({
       JSON.stringify(prev) === JSON.stringify({ label, lens }) ? prev : { label, lens },
     );
   }, [
-    h,
+    ts,
+    h.err,
+    h.font,
     focused,
     iconsOnly,
     sceneRef,
@@ -423,8 +429,10 @@ const Dock = memo(function Dock({ h }: { h: HomeInput }) {
     contents = useRef(new Map<string, HTMLElement>());
   const register = useCallback((id: AppId, el: HTMLElement | null) => {
     if (el) contents.current.set(id, el);
+    else contents.current.delete(id);
   }, []);
   const [outside, setOutside] = useState('');
+  const edgeFocus = c.focus === 'type' ? h.zone + '|' + h.i : '';
   // A wide label can reach the shelf edge before its icon. Watch the icon through the track's
   // transition, so the label and icon disappear together.
   useLayoutEffect(() => {
@@ -451,7 +459,8 @@ const Dock = memo(function Dock({ h }: { h: HomeInput }) {
       if (Date.now() < until) frame = requestAnimationFrame(loop);
     });
     return () => cancelAnimationFrame(frame);
-  });
+    // oxlint-disable-next-line react/exhaustive-effect-dependencies -- These inputs change the measured DOM geometry, including remounted marks and Type focus scaling.
+  }, [active, off, order, c, edgeFocus, h.font, h.metrics, h.revision, g.broad, store]);
   const tileFocus = h.zone === 'apps',
     tileSel = h.zone === 'util' || h.zone === 'preview',
     out = outside.split('|');

@@ -28,7 +28,8 @@
     "lint:fix": "oxlint --fix .",
     "format": "oxfmt --write .",
     "format:check": "oxfmt --check .",
-    "check:sounds": "node scripts/check-sounds.mjs"
+    "check:sounds": "node scripts/check-sounds.mjs",
+    "check:render-work": "node scripts/check-render-work.mjs"
   },
   "dependencies": {
     "react": "^19.3.1",
