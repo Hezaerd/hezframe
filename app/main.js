@@ -1,5 +1,5 @@
 /* CleanFrame Home. Static materials, local preferences and public Tizen app controls. */
-(function () {
+export function startHezFrame() {
   'use strict';
 
   /* ---------- Bundled data ---------- */
@@ -1126,10 +1126,10 @@
     return text + (name ? ', ' + name : '');
   }
   function renderCaption(t, hs) {
-    var html = '<span class="clock">' + clockHtml() + '</span>';
-    if (S.c.greeting === 'on') html += '<span class="greeting">' + esc(greetingText()) + '</span>';
-    if (S.c.apps !== 'icons' && hs.items[hs.i] && (S.c.layout === 'list' ? photoLabel(hs.items[hs.i].id, false).size < 88 || photoLabel(hs.items[hs.i].id, false).ellipsis : hs.zone === 'apps' && reducedDockLabel(hs.items[hs.i].id))) html += '<span class="cap-line full-name">' + esc(app(hs.items[hs.i].id).name) + '</span>';
-    setHTML(caption, html);
+    var fullName = '';
+    if (S.c.apps !== 'icons' && hs.items[hs.i] && (S.c.layout === 'list' ? photoLabel(hs.items[hs.i].id, false).size < 88 || photoLabel(hs.items[hs.i].id, false).ellipsis : hs.zone === 'apps' && reducedDockLabel(hs.items[hs.i].id))) fullName = app(hs.items[hs.i].id).name;
+    var metrics = fontMetrics[homeFont()];
+    window.HezFrameUI.renderCaption(caption, { time: clockText(), digits: !!(metrics && metrics.digitCell), greeting: S.c.greeting === 'on' ? greetingText() : '', fullName: fullName });
   }
 
   function utilBtn(z, i, action, inner, extra, name) {
@@ -1428,9 +1428,10 @@
     if (sheet) sheetView.setAttribute('aria-modal', 'true');
     else sheetView.removeAttribute('aria-modal');
     sceneEl.setAttribute('aria-hidden', sheet || isSettingsDetail(t) ? 'true' : 'false');
-    if (!sheet) { sheetView.innerHTML = ''; sheetKey = ''; return; }
+    if (!sheet) { window.HezFrameUI.disposeWithin(sheetView); sheetView.innerHTML = ''; sheetKey = ''; return; }
     key = t.id + '|' + (t.mode || '') + '|' + (t.msg || '') + '|' + S.variant + '|' + S.c.bg;
     if (key !== sheetKey) {
+      window.HezFrameUI.disposeWithin(sheetView);
       sheetView.innerHTML = FRAMES[t.id](t);
       sheetKey = key; slotEls = {};
       Array.prototype.forEach.call(sheetView.querySelectorAll('[data-slot]'), function (el) { slotEls[el.getAttribute('data-slot')] = el; });
@@ -1664,11 +1665,7 @@
       el.otherAfter.className = 'row-cue editor-after' + (afterRows ? ' is-on' : '');
     },
     settings: function (t, el) {
-      var html = '';
-      settingsRows().forEach(function (r) {
-        html += '<button type="button" tabindex="-1" class="settings-group' + (r.id === t.f.id ? ' is-focus' : '') + '" data-z="row" data-i="0" data-id="' + r.id + '" data-action="settings.' + (r.id === 'editor' ? 'editor' : 'group.' + r.id) + '"><span class="settings-group-copy"><span class="settings-group-name">' + esc(r.label) + '</span><span class="settings-group-value">' + esc(r.value) + '</span></span>' + icon('right') + '</button>';
-      });
-      setHTML(el.list, html);
+      window.HezFrameUI.renderSettings(el.list, { rows: settingsRows(), focusedId: t.f.id });
     },
     message: function (t, el) {
       setHTML(el.acts, messageContent(t).actions.map(function (a, i) {
@@ -1969,4 +1966,4 @@
   initialise();
   setLook({}, { transient: true, startup: true });
   norm(); render(); fit(); focusStage(); updateClock(); syncRotation();
-})();
+}

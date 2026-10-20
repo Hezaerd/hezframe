@@ -6,7 +6,7 @@ Photo backgrounds, large app names, a clock, remote navigation, and local appear
 
 ## Current device status
 
-The initial version was installed and physically tested on a Samsung Q60B running Tizen 6.5: rendering, remote navigation and launching Stremio worked. HezFrame 0.6.2 adds the six-app order and rebrands that installation. Physical verification of this update remains pending.
+The initial version was installed and physically tested on a Samsung Q60B running Tizen 6.5: rendering, remote navigation and launching Stremio worked. The React experiment preserves the existing app identity and preferences. Physical verification of this build remains pending.
 
 Home-button reassignment and automatic startup are not configured. Open the app from Samsung Apps. Art Mode is omitted on this non-Frame TV.
 
@@ -24,7 +24,7 @@ npm run check:public
 npm run export:public
 ```
 
-Open http://localhost:4795/home/. Use arrow keys, Enter and Escape. The browser cannot launch TV apps. All public fonts and wallpaper assets are bundled.
+Open http://localhost:5173/. Use arrow keys, Enter and Escape. The browser cannot launch TV apps. All public fonts and wallpaper assets are bundled.
 
 The unsigned export is `dist/HezFrame-public-unsigned.wgt`. Installing requires Samsung's official SDK and your own Samsung signing certificates with your TV registered. Signing keys, device addresses, local setup records and signed packages are excluded from Git.
 
@@ -59,3 +59,12 @@ In `app/config.js`:
 - `greeting.name` adds an optional name, such as `Hezaerd`. Leave it empty for just “Good morning”, “Good afternoon” or “Good evening”, based on the TV's local time.
 - Each feature's `enabled` setting is the default for new preferences. Saved on-screen choices take precedence.
 - `wallpapers.collections` defines collection names and their wallpaper IDs; `wallpapers.collection` sets the initial collection. Photos and their pre-rendered materials must exist in the bundled gallery.
+
+
+## React experiment
+
+React + TypeScript owns the stage shell, clock, greeting and settings overview in `src/`. The existing JavaScript controller still manages navigation, wallpaper assets, the other panels and Tizen calls. This is an incremental migration, not a complete component rewrite. React roots are explicitly unmounted when a controller-owned panel closes.
+
+`npm run dev` starts Vite on port 5173. JavaScript/TypeScript edits reload the app so the legacy controller cannot accumulate duplicate listeners. `npm run build` type-checks the TSX and emits `dist/web/`, with a production IIFE bundle targeting Chrome 85 and local runtime assets. `npm run preview` serves that production output at http://localhost:4795/home/. The browser tests also run against the production output, and `npm run export:public` builds before making the unsigned widget.
+
+The TV does not run Node.js or Vite. It receives the built files, signed with the existing Samsung certificates. React dependency licenses are included in the widget.

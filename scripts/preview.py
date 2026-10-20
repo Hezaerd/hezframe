@@ -33,14 +33,14 @@ class Preview(SimpleHTTPRequestHandler):
         route = urlsplit(path).path
         # Serve only the packaged UI and offline material-builder inputs.
         if route == '/' or route == '/home':
-            return str(ROOT / 'app/index.html')
+            return str(ROOT / 'dist/web/index.html')
         if route.startswith('/home/'):
-            self.directory = str(ROOT / 'app')
+            self.directory = str(ROOT / 'dist/web')
             return super().translate_path(route[5:])
         if route.startswith('/build/'):
             self.directory = str(ROOT / 'scripts/materials')
             return super().translate_path(route[6:])
-        self.directory = str(ROOT / 'app')
+        self.directory = str(ROOT / 'dist/web')
         return super().translate_path(route)
 
     def do_GET(self):

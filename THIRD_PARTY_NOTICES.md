@@ -33,3 +33,8 @@ Photographers retain their rights. Wallpapers, thumbnails, panel backgrounds and
 Development dependencies retain the licences in their npm packages. They are not copied into the TV JavaScript runtime.
 
 `npm run export:public` excludes private fonts and includes this notice and the root MIT licence. Preserve the included font and icon licence texts. Review [public release preparation](docs/public-release.md) before publishing a repository or download.
+
+
+## React runtime
+
+The production bundle includes React, React DOM and Scheduler from the React project (MIT license). Their original license texts are copied from the installed packages into `licenses/react.txt`, `licenses/react-dom.txt` and `licenses/scheduler.txt` in the widget. Dependency versions are pinned by `package-lock.json`.

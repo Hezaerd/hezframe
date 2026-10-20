@@ -1,25 +1,38 @@
 {
   "name": "hezframe",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "private": true,
   "description": "A quiet Samsung TV home screen with your apps, photographs and the time.",
   "scripts": {
-    "dev": "python scripts/preview.py",
-    "check": "node --check app/config.js && node --check app/main.js && node --check app/device.js && python scripts/check.py",
+    "dev": "vite",
+    "check": "tsc --noEmit && node --check app/config.js && node --check app/device.js && python scripts/check.py",
     "package": "python scripts/package.py",
     "tv:info": "python scripts/tv.py info",
     "tv:install": "python scripts/tv.py install",
     "tv:launch": "python scripts/tv.py launch",
     "check:browser": "node scripts/check-browser.mjs",
-    "dev:public": "python scripts/preview.py --public-fonts",
-    "export:public": "python scripts/export-public.py",
+    "dev:public": "vite",
+    "export:public": "npm run build && python scripts/export-public.py",
     "check:public": "python scripts/check-public.py",
     "check:hezframe": "node scripts/check-hezframe.mjs",
     "check:wallpapers": "node scripts/check-wallpapers.mjs",
-    "check:atmosphere": "node scripts/check-atmosphere.mjs"
+    "check:atmosphere": "node scripts/check-atmosphere.mjs",
+    "build": "tsc --noEmit && vite build",
+    "preview": "python scripts/preview.py --public-fonts",
+    "precheck:browser": "npm run build"
   },
   "devDependencies": {
-    "playwright": "1.64.1"
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "playwright": "1.64.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.4"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
 }
