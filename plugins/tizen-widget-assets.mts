@@ -2,6 +2,8 @@ import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import type { Plugin, ResolvedConfig } from 'vite';
 
+export const TV_CHROME_MAJOR = 85;
+
 export interface TizenWidgetAssetsOptions {
   projectRoot: string;
 }
