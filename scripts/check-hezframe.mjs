@@ -7,7 +7,7 @@ try {
   await page.goto(preview.baseURL + '/home/');
   await page.waitForFunction(() => window.ShoreQA && ShoreQA.state().shown);
   assert.deepEqual(await page.evaluate(() => ShoreQA.state().home), expected);
-  await page.evaluate(() => localStorage.setItem('cleanframe.home.v1', JSON.stringify({ home: ['stremio', 'primevideo', 'appletv'], look: { bg: 'photo', wall: 'forest', layout: 'list', apps: 'text', font: 'geist' } })));
+  await page.evaluate(() => localStorage.setItem('cleanframe.home.v1', JSON.stringify({ wallpaperConfigVersion: 1, home: ['stremio', 'primevideo', 'appletv'], look: { bg: 'photo', wall: 'forest', layout: 'list', apps: 'text', font: 'geist' } })));
   await page.reload();
   await page.waitForFunction(() => window.ShoreQA && ShoreQA.state().shown);
   let state = await page.evaluate(() => ShoreQA.state());

@@ -62,5 +62,5 @@ if __name__ == '__main__':
     args = parser.parse_args()
     server = PreviewServer(('127.0.0.1', args.port), Preview)
     server.include_private_fonts = not args.public_fonts
-    print('CleanFrame preview: http://127.0.0.1:' + str(server.server_port) + '/home/', flush=True)
+    print('HezFrame preview: http://127.0.0.1:' + str(server.server_port) + '/home/', flush=True)
     server.serve_forever()

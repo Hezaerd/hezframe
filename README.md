@@ -37,3 +37,13 @@ Documents under `docs/` and the native Home helper are inherited reference mater
 ## Credits and license
 
 Distributed under the [MIT license](LICENSE). Original copyright and [third-party notices](THIRD_PARTY_NOTICES.md) are retained. Fonts, photographs and service logos retain their respective licenses. No affiliation with Samsung or the streaming services.
+## Wallpaper configuration
+
+`app/config.js` controls the Unsplash nature playlist, starting photo and default rotation. Photos are bundled locally with their credits in `app/assets/wallpapers/SOURCES.json`, so rotation works offline without an API key.
+
+- `initial`: starting wallpaper ID (default `forest`).
+- `rotation`: `fixed`, `open`, `5`, `15` or `60` (minutes). Default: `5`.
+- `playlist`: ordered wallpaper IDs used for rotation. Unknown IDs and duplicates are ignored; an empty valid playlist falls back to the full gallery.
+- `revision`: increase this number to apply revised wallpaper/rotation defaults to existing installations. Otherwise their saved choices take precedence.
+
+On screen, use **Settings → Background → Wallpaper / Rotation**. Manual wallpaper selection retains the full gallery. Automatic rotation uses only the configured playlist, skips city/abstract images by default, and pauses in settings, on flat backgrounds and while the app is hidden.

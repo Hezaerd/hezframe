@@ -26,6 +26,14 @@
   ];
   var PRIMARY = PRIMARY_APPS.map(function (a) { return a.id; }), APPS = PRIMARY_APPS.slice(), ALPHA = [];
   var WALLS = window.CleanFrameWallpapers || [{ id: 'misty', name: 'Misty coast', tone: 'light', ut: { tr: 'mist', br: 'mist' }, frostVeil: .20 }];
+  var WALL_CONFIG = window.HezFrameConfig && window.HezFrameConfig.wallpapers || {};
+  var WALL_REVISION = Math.max(1, Math.floor(Number(WALL_CONFIG.revision) || 1));
+  var ROTATION_WALLS = [];
+  (Array.isArray(WALL_CONFIG.playlist) ? WALL_CONFIG.playlist : []).forEach(function (id) {
+    if (wall(id) && ROTATION_WALLS.indexOf(id) < 0) ROTATION_WALLS.push(id);
+  });
+  if (!ROTATION_WALLS.length) ROTATION_WALLS = WALLS.map(function (w) { return w.id; });
+  var INITIAL_WALL = wall(WALL_CONFIG.initial) ? WALL_CONFIG.initial : ROTATION_WALLS[0];
   var ADAPTIVE_INK = window.CleanFrameAdaptiveInk || {};
   WALLS.forEach(function (w) { w.ut = w.ut || { tr: 'light', br: 'light' }; w.frostVeil = w.frostVeil || .12; });
   var MODES = [
@@ -93,6 +101,7 @@
   /* ---------- Helpers ---------- */
   function app(id) { for (var i = 0; i < APPS.length; i++) if (APPS[i].id === id) return APPS[i]; return null; }
   function wall(id) { for (var i = 0; i < WALLS.length; i++) if (WALLS[i].id === id) return WALLS[i]; return null; }
+  function nextRotationWall(id) { return ROTATION_WALLS[(ROTATION_WALLS.indexOf(id) + 1) % ROTATION_WALLS.length]; }
   function wallIndex(id) { for (var i = 0; i < WALLS.length; i++) if (WALLS[i].id === id) return i; return 0; }
   function frostClass(w) { var i = [.12, .20, .30, .36, .44].indexOf(w.frostVeil); return i > 0 ? ' fv-' + (i + 1) : ''; }
   function wallClasses(w) { return frostClass(w) + (w.listColumn ? ' lc-' + w.listColumn : '') + (w.dockQuiet ? ' db-quiet' : '') + (w.clockMist ? ' tl-mist' : ''); }
@@ -325,7 +334,15 @@
           saved.home = ['stremio', 'youtube', 'netflix', 'disneyplus', 'primevideo', 'appletv'];
           saved.recent = [];
         }
-        if (saved && typeof saved === 'object' && !Array.isArray(saved)) return saved;
+        if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+          if (saved.wallpaperConfigVersion !== WALL_REVISION) {
+            saved.wall = INITIAL_WALL; saved.wallpaper = INITIAL_WALL;
+            saved.mode = WALL_CONFIG.rotation;
+            if (saved.look && typeof saved.look === 'object') { saved.look.wall = INITIAL_WALL; saved.look.bg = 'photo'; }
+            else saved.bg = 'photo';
+          }
+          return saved;
+        }
       } catch (e) { storageOk = false; }
     }
     return null;
@@ -348,15 +365,15 @@
       bg: pick(modern.bg, LOOK_VALUES.bg, legacyList ? 'dark' : 'photo'), layout: pick(modern.layout, LOOK_VALUES.layout, s.theme && !legacyList ? 'dock' : 'list'),
       apps: pick(modern.apps, LOOK_VALUES.apps, s.theme && !legacyList ? 'both' : 'text'), controls: pick(modern.controls, LOOK_VALUES.controls, 'both'),
       focus: pick(modern.focus, LOOK_VALUES.focus, s.theme && !legacyList ? 'glass' : 'type'), material: pick(modern.material, LOOK_VALUES.material, 'soft'),
-      font: pick(modern.font, LOOK_VALUES.font, 'manrope'), wall: wall(modern.wall || s.wallpaper) ? modern.wall || s.wallpaper : 'valley',
+      font: pick(modern.font, LOOK_VALUES.font, 'manrope'), wall: wall(modern.wall || s.wallpaper) ? modern.wall || s.wallpaper : INITIAL_WALL,
       home: h, recent: recent, lastApp: h.indexOf(s.lastApp) >= 0 ? s.lastApp : h[0],
-      mode: pick(s.mode, MODES.map(function (m) { return m.id; }), 'fixed')
+      mode: pick(s.mode, MODES.map(function (m) { return m.id; }), pick(WALL_CONFIG.rotation, MODES.map(function (m) { return m.id; }), '5'))
     };
   }
   function serialise(c) {
     var out = {}, id;
     Object.keys(c).forEach(function (key) { out[key] = c[key]; });
-    out.hezframeVersion = 1; out.version = 2; out.look = lookOf(c); out.dock = c.home.slice(); out.wallpaper = c.wall;
+    out.wallpaperConfigVersion = WALL_REVISION; out.hezframeVersion = 1; out.version = 2; out.look = lookOf(c); out.dock = c.home.slice(); out.wallpaper = c.wall;
     out.theme = c.layout === 'list' ? 'list' : 'shore';
     out.appRecords = [];
     c.home.concat(c.recent).forEach(function (key) {
@@ -369,7 +386,7 @@
     var saved = load(), initial; S.c = clean(saved); initial = next(S.c.home.slice(), S.c.recent.slice());
     S.stack = [{ id: 'home', f: { zone: 'apps', u: 0 } }];
     S.sel = S.c.lastApp; S.selIdx = S.c.home.indexOf(S.sel);
-    if (saved && initial.mode === 'open') initial.wall = WALLS[(wallIndex(initial.wall) + 1) % WALLS.length].id;
+    if (saved && initial.mode === 'open') initial.wall = nextRotationWall(initial.wall);
     // Keep the old schema keys alongside the builder values for in-place updates.
     try { localStorage.setItem(KEY, JSON.stringify(serialise(initial))); S.c = initial; storageOk = true; } catch (e) { storageOk = false; }
   }
@@ -1760,7 +1777,7 @@
     activeSince = Date.now();
     rotationTimer = setTimeout(function () {
       pauseRotation(); activeMs = 0;
-      if (rotationActive()) setLook({ wall: WALLS[(wallIndex(S.c.wall) + 1) % WALLS.length].id }, { row: 'bg' });
+      if (rotationActive()) setLook({ wall: nextRotationWall(S.c.wall) }, { row: 'bg' });
     }, Math.max(10, mode().min * QA.minuteMs - activeMs));
   }
   function updateClock() {
