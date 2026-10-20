@@ -4,7 +4,7 @@
 
 Start with Node.js 22+ and Python 3.10+, then `npm ci`. These are the supported development baselines; lower versions have not been checked. Install Chromium once with `npx playwright install chromium` for the optional browser tools. Linux hosts may also need Playwright's documented system dependencies (`npx playwright install --with-deps chromium`).
 
-`npm run dev` starts http://localhost:4795/home/, bound to this computer only. `/home/` serves `app/`, the same source used in the signed widget. Arrow keys, Enter and Escape mirror remote navigation. Device controls report that they require the TV; no success is simulated.
+`npm run dev` starts the Vite development server at http://127.0.0.1:5173/, bound to this computer only. It serves `app/` and compiles `src/` on request; the signed widget is built from the same sources. `npm run preview` serves the production build at http://localhost:4795/home/. Arrow keys, Enter and Escape mirror remote navigation. Device controls report that they require the TV; no success is simulated.
 
 `npm run dev:public` serves the same interface using only the bundled public fonts, even when paid Pangram files exist locally. For a contributor's fresh clone, use the README and `docs/for-agents.md`; the signing/device setup below describes the reference machine and needs adaptation for another owner.
 
@@ -12,13 +12,14 @@ All UI assets, public fonts and the fifteen wallpapers are bundled. This private
 
 ## Runtime map and compatibility
 
-- `app/index.html` loads the device adapter, gallery/font/palette catalogues, `assets/icons/metrics.js` and `main.js`, with `style.css`.
-- `main.js` owns the List and Dock layouts, panel stack, focus, preferences and wallpaper timers. `device.js` owns installed-app discovery and Tizen calls. Keep device details in that adapter.
+- `app/index.html` loads the device adapter, the gallery, font and palette catalogues, `assets/icons/metrics.js` and `config.js`, then the app (`src/main.tsx` in development, `hezframe.js` in the widget), with `style.css`.
+- `src/model/` owns the app state. `prefs.ts` reads and migrates saved preferences, `navigation.ts` handles remote keys and focus for each view, `look.ts` loads and shows appearance and wallpaper changes, and `reducer.ts` applies every action. `src/store.ts` runs the reducer and the effects it returns.
+- `src/view/` renders the List and Dock layouts, panels and Settings from the store. `src/platform/` wraps storage, fonts, images and `device.js`; `src/controllers.ts` handles keys, visibility, idle dimming and rotation timers. `device.js` owns installed-app discovery and Tizen calls. Keep device details in that adapter.
 - The logical stage is 1920 x 1080, scaled uniformly to the viewport. Check at 1920 x 1080 and 1280 x 720. Glass geometry and cached materials must stay aligned.
 - Preferences use localStorage key `cleanframe.home.v1`, with a fallback read from `cleanframe.shore.v1`. Legacy fields are `dock`, `wallpaper`, `mode`, `lastApp` and `theme`. The 0.6 migration preserves app order, wallpaper, rotation and selection. Legacy `list` becomes Dark / List / Type; `shore` and `grid` become Photo / Dock / Glass. Appearance axes are stored separately. A saved dynamic app keeps its real app ID and name; discovery refreshes the installed catalogue. Keep migration checks when changing this format.
 - `window.ShoreQA.state()` and `.where()` expose state and focus for browser tests. `minuteMs` can shorten rotation intervals in an isolated browser test.
 
-The tested target is the Tizen 9.0 TV in [TV status](tv-status.md). The manifest's `required_version="6.5"` is a package declaration, not proof that Tizen 6.5 has been tested. The exact TV Chromium/WebKit engine version has not been recorded. Keep runtime JavaScript ES5-compatible and verify any new DOM/CSS API on the target before claiming support. `node --check` checks syntax for Node; it does not enforce ES5 or TV API availability.
+The tested target is the Tizen 9.0 TV in [TV status](tv-status.md). The manifest's `required_version="6.5"` is a package declaration, not proof that Tizen 6.5 has been tested. The exact TV Chromium/WebKit engine version has not been recorded. Keep the scripts in `app/` ES5-compatible; Vite compiles `src/` for Chrome 85. Verify any new DOM/CSS API on the target before claiming support. `node --check` checks syntax for Node; it does not enforce ES5 or TV API availability.
 
 Keep material rendering in the development tools. See [asset generation](assets.md) and [testing](testing.md).
 

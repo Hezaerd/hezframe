@@ -1,10 +1,14 @@
 // Development only. A private preview and a fresh browser profile for each run.
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
+import { readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
 
 export const root = fileURLToPath(new URL('../', import.meta.url));
+
+/** The TypeScript sources bundled into the widget, as root-relative paths. */
+export const appSources = () => readdirSync(root + 'src', { recursive: true }).map(f => 'src/' + String(f).split('\\').join('/')).filter(f => /\.tsx?$/.test(f) && !/\.test(-support)?\.ts$/.test(f)).sort();
 
 export async function openPreview({ publicFonts = false } = {}) {
   const args = ['scripts/preview.py', '--port', '0'];

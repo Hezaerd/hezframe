@@ -4,7 +4,7 @@ CleanFrame was built for one Samsung The Frame, with very little work on portabi
 
 ## Start in the browser
 
-Use the README's public-font setup. Keep changes in `app/` and the maintained tools in `scripts/`. Use your browser to develop interface changes.
+Use the README's public-font setup. Keep app changes in `src/` and `app/`, and the maintained tools in `scripts/`. Use your browser to develop interface changes.
 
 ```sh
 npm ci
@@ -15,7 +15,7 @@ CLEANFRAME_PUBLIC_FONTS=1 npm run check:browser
 npm run check:public
 ```
 
-Keep runtime JavaScript ES5-compatible. Use existing focus, panel and preference logic. A new CSS/DOM API needs target-device evidence before it becomes a compatibility claim. Keep new dependencies in development tooling unless the runtime need is clear.
+Keep the scripts in `app/` ES5-compatible; Vite compiles `src/` for Chrome 85. Change focus, panel and preference behaviour through the model in `src/model/`. A new CSS/DOM API needs target-device evidence before it becomes a compatibility claim. Keep new dependencies in development tooling unless the runtime need is clear.
 
 ## Propose a change
 

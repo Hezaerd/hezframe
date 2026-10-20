@@ -1,11 +1,11 @@
 // Bounded browser performance audit of production views. This is not a TV benchmark.
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { openPreview, root } from './browser.mjs';
+import { appSources, openPreview, root } from './browser.mjs';
 
 const output = root + '.local/qa/performance/';
 mkdirSync(output, { recursive: true });
-const sourceFiles = ['app/main.js', 'app/device.js', 'app/index.html', 'app/style.css', 'app/assets/wallpapers/catalog.js', 'app/assets/adaptive-ink.js'];
+const sourceFiles = [...appSources(), 'app/device.js', 'app/index.html', 'app/style.css', 'app/assets/wallpapers/catalog.js', 'app/assets/adaptive-ink.js'];
 function hashes() {
   return Object.fromEntries(sourceFiles.map(file => {
     try { return [file, createHash('sha256').update(readFileSync(root + file)).digest('hex')]; }
