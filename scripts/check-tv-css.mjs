@@ -9,13 +9,20 @@ if (!files.length) throw Error('No packaged CSS found. Run npm run build first.'
 
 function serializeDeclarationsSeparately(code, targets) {
   let id = 0;
-  return transform({
+  let hasInset = false;
+  const result = transform({
     filename: 'packaged.css', code, targets,
     visitor: {
+      Declaration(declaration) {
+        const property = declaration.property === 'unparsed' ? declaration.value.propertyId.property : declaration.property;
+        if (property === 'inset') hasInset = true;
+      },
       Rule: {
         style(rule) {
           const { declarations, importantDeclarations } = rule.value.declarations;
-          const isolate = (declaration, important) => ({
+          const groupByProperty = declarations => Map.groupBy(declarations, declaration =>
+            declaration.property === 'unparsed' ? declaration.value.propertyId.property : declaration.property);
+          const isolate = (declarations, important) => ({
             ...rule,
             value: {
               ...rule.value,
@@ -23,22 +30,23 @@ function serializeDeclarationsSeparately(code, targets) {
                 ...selector, { type: 'class', name: `tv-css-declaration-${id++}` }
               ]),
               declarations: {
-                declarations: important ? [] : [declaration],
-                importantDeclarations: important ? [declaration] : []
+                declarations: important ? [] : declarations,
+                importantDeclarations: important ? declarations : []
               },
               rules: []
             }
           });
           const rules = [
-            ...declarations.map(declaration => isolate(declaration, false)),
-            ...importantDeclarations.map(declaration => isolate(declaration, true)),
+            ...[...groupByProperty(declarations).values()].map(group => isolate(group, false)),
+            ...[...groupByProperty(importantDeclarations).values()].map(group => isolate(group, true)),
             { ...rule, value: { ...rule.value, declarations: { declarations: [], importantDeclarations: [] } } }
           ];
           return JSON.parse(JSON.stringify(rules), (_key, value) => value === null ? undefined : value);
         }
       }
     }
-  }).code;
+  });
+  return { code: result.code, hasInset };
 }
 
 let failures = 0;
@@ -46,7 +54,7 @@ for (const file of files) {
   const code = readFileSync(root + file);
   const normalized = serializeDeclarationsSeparately(code);
   const lowered = serializeDeclarationsSeparately(code, { chrome: TV_CHROME_MAJOR << 16 });
-  if (!normalized.equals(lowered)) {
+  if (normalized.hasInset || !normalized.code.equals(lowered.code)) {
     console.error(`FAIL ${file.replaceAll('\\', '/')}: CSS requires lowering for Chrome ${TV_CHROME_MAJOR}.`);
     failures++;
   }
