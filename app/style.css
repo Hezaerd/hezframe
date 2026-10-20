@@ -3533,7 +3533,12 @@ body {
   padding-left: 128px;
 }
 .detail-atmosphere .setting-section + .setting-section {
-  margin-top: 30px;
+  margin-top: 20px;
+}
+.detail-atmosphere .setting-choice {
+  min-height: 80px;
+  padding-top: 8px;
+  padding-bottom: 8px;
 }
 .detail-collections .setting-choice {
   min-height: 80px;

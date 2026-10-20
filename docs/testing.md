@@ -7,6 +7,7 @@ npm ci
 npm run check
 npx playwright install chromium
 npm run check:browser
+npm run check:sounds
 ```
 
 `check` type-checks `src/`, runs the model's unit tests (`npm test`, which needs Node.js 22.18 or later), and validates the runtime scripts' syntax, package identity/version and bundled resources. It does not contact a TV. `check:browser` uses a fresh Playwright Chromium profile and its own loopback preview. It checks List and Dock navigation, single focus, Home controls, grouped Settings, explicit OK application, applied checkmarks, pending-load cancellation, retries, persistence, all fifteen wallpaper bundles, available fonts, 720p scaling, migrations, the Home editor and honest browser-only launch errors. Reports and screenshots are in ignored `.local/qa/`. A failed assertion exits with a nonzero status.
@@ -33,3 +34,5 @@ Run these only under a task that includes TV testing. Announce any installation 
 5. Test normal power-on after a streaming app and the usual Art Mode routine only when that work is included. Preserve the native Home recovery baseline and restore it before any uninstall/identity change.
 
 The current pending results are listed at the top of `tv-status.md`. Browser CPU throttling is a development comparison, not a TV performance measurement.
+
+`check:sounds` decodes the bundled MP3 with real Web Audio, traces playback from browser key events, and checks the saved switch, volume, repeats, 720p/1080p fit, dimmed/hidden silence, stale asynchronous resumes and graceful audio failures. It does not establish audible quality or latency on a TV.

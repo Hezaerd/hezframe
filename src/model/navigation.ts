@@ -579,7 +579,8 @@ function applyExtra(d: Draft, axis: ExtraAxis, value: string | undefined): void 
   const prefs = next(d);
   if (axis === 'cinema') prefs.cinema = v;
   else if (axis === 'crossfade') prefs.crossfade = v;
-  else prefs.greeting = v;
+  else if (axis === 'greeting') prefs.greeting = v;
+  else prefs.sounds = v;
   write(d, prefs, { kind: 'extra', axis, value: v });
 }
 export function extraSaved(d: Draft, axis: ExtraAxis, _value: string): void {

@@ -328,6 +328,7 @@ export function App({ store, controllers }: { store: Store; controllers: Control
     controllers.focusStage();
     if (!el || !ev.currentTarget.contains(el)) return;
     const action = pointAction(el);
+    if (action) controllers.click();
     controllers.wake();
     if (action) store.dispatch(action);
   };

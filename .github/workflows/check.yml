@@ -32,4 +32,5 @@ jobs:
       - run: npm run check:hezframe
       - run: npm run check:wallpapers
       - run: npm run check:atmosphere
+      - run: npm run check:sounds
       - run: npm run export:public

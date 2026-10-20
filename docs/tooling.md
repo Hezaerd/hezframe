@@ -54,3 +54,5 @@ with LF endings so formatting also works after a Windows checkout.
 Keep new exceptions narrow and explain their purpose here or at the call site.
 Do not apply suggestion/dangerous fixes without reviewing behavior and running
 the relevant checks.
+
+For the native React Compiler experiment, its compatibility results and bundle tradeoff, see [React Compiler through OXC](react-compiler.md). Optimization is separate from the lint checks and remains disabled in the default build.

@@ -13,6 +13,21 @@ const focus = (s: State) => {
   return t.kind === 'home' ? t.zone + ':' + (t.zone === 'util' ? t.u : s.session.sel) : t.kind;
 };
 
+test('UI sounds commit only after a successful preference write', () => {
+  const app = start();
+  app.dispatch({ type: 'scene', name: 'settings' });
+  app.dispatch({ type: 'point', zone: 'row', index: 0, id: 'atmosphere' });
+  const before = app.stored();
+  app.refuseWrites(true);
+  app.dispatch({ type: 'point', zone: 'detail', index: 0, id: 'choice.sounds.off' });
+  assert.equal(app.state().prefs.sounds, 'on');
+  assert.deepEqual(app.stored(), before);
+  app.refuseWrites(false);
+  app.dispatch({ type: 'point', zone: 'detail', index: 0, id: 'choice.sounds.off' });
+  assert.equal(app.state().prefs.sounds, 'off');
+  assert.equal(app.stored().sounds, 'off');
+});
+
 test('Dock moves along the apps without wrapping and Up reaches the Home controls', () => {
   const app = start();
   app.keys('right');

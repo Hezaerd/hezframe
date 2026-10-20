@@ -56,7 +56,7 @@ export function settingsRows(s: State): SettingsRow[] {
       value: VALUE_NAMES[c.focus] + (materialApplies(c) ? ', ' + VALUE_NAMES[c.material] : ''),
     },
     { id: 'editor', label: 'Apps on Home', value: n + (n === 1 ? ' app' : ' apps') },
-    { id: 'atmosphere', label: 'Atmosphere', value: 'Dimming, transitions and greeting' },
+    { id: 'atmosphere', label: 'Atmosphere', value: 'Dimming, transitions, greeting and sound' },
     { id: 'samsung', label: 'Samsung', value: 'Home and TV settings' },
   ];
 }
@@ -73,6 +73,7 @@ export type ChoiceAxis =
   | 'cinema'
   | 'crossfade'
   | 'greeting'
+  | 'sounds'
   | 'collection';
 export interface DetailItem {
   action: string;
@@ -91,10 +92,10 @@ export interface DetailSection {
   reason?: string;
 }
 
-const EXTRA_AXES: ChoiceAxis[] = ['cinema', 'crossfade', 'greeting', 'collection'];
+const EXTRA_AXES: ChoiceAxis[] = ['cinema', 'crossfade', 'greeting', 'sounds', 'collection'];
 export function isExtraAxis(
   axis: ChoiceAxis | undefined,
-): axis is 'cinema' | 'crossfade' | 'greeting' | 'collection' {
+): axis is 'cinema' | 'crossfade' | 'greeting' | 'sounds' | 'collection' {
   return !!axis && EXTRA_AXES.includes(axis);
 }
 
@@ -187,6 +188,13 @@ export function detailSections(s: State, group: DetailGroup): DetailSection[] {
         title: 'Personal greeting',
         horizontal: true,
         items: options('greeting', ['on', 'off']),
+      },
+      {
+        id: 'sounds',
+        title: 'UI sounds',
+        horizontal: true,
+        items: options('sounds', ['on', 'off']),
+        reason: 'A quiet click on OK and Back.',
       },
     ];
   if (group === 'layout')

@@ -180,10 +180,16 @@ export function readEnv(win: RuntimeGlobals, minuteMs: number): Env {
       cinema: enabled('cinema'),
       crossfade: enabled('crossfade'),
       greeting: enabled('greeting'),
+      sounds: enabled('sounds'),
     },
     cinemaSeconds: clamp(Number(record(config.cinema).idleSeconds) || 60, 1, 3600),
     dimAmount: clamp(Number(record(config.cinema).dimAmount) || 0.55, 0.1, 0.85),
     crossfadeMs: clamp(Number(record(config.crossfade).durationMs) || 900, 100, 3000),
+    soundVolume:
+      typeof record(config.sounds).volume === 'number' &&
+      Number.isFinite(record(config.sounds).volume)
+        ? clamp(Number(record(config.sounds).volume), 0, 1)
+        : 0.2,
     greetingName: String(record(config.greeting).name || '')
       .trim()
       .slice(0, 40),

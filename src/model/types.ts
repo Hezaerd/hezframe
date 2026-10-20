@@ -29,7 +29,7 @@ export interface Look {
 }
 export type LookAxis = keyof Look;
 export type LookPatch = Partial<Look>;
-export type ExtraAxis = 'cinema' | 'crossfade' | 'greeting' | 'collection';
+export type ExtraAxis = 'cinema' | 'crossfade' | 'greeting' | 'sounds' | 'collection';
 
 /** Committed preferences. Key order matches the stored JSON written since 0.6. */
 export interface Prefs extends Look {
@@ -40,6 +40,7 @@ export interface Prefs extends Look {
   cinema: OnOff;
   crossfade: OnOff;
   greeting: OnOff;
+  sounds: OnOff;
   collection: CollectionId;
 }
 
@@ -107,11 +108,12 @@ export interface Env {
   defaultCollection: CollectionId;
   defaultRotation: RotationMode;
   privateFonts: string[];
-  defaults: { cinema: OnOff; crossfade: OnOff; greeting: OnOff };
+  defaults: { cinema: OnOff; crossfade: OnOff; greeting: OnOff; sounds: OnOff };
   cinemaSeconds: number;
   dimAmount: number;
   crossfadeMs: number;
   greetingName: string;
+  soundVolume: number;
   palettes: Record<string, Palette | undefined>;
   iconMetrics: Record<string, IconMetric | undefined>;
   reducedMotion: boolean;
