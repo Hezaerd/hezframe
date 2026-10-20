@@ -2,7 +2,7 @@
   "name": "hezframe",
   "version": "0.6.2",
   "private": true,
-  "description": "A quiet Samsung TV home screen, adapted from CleanFrame.",
+  "description": "A quiet Samsung TV home screen with your apps, photographs and the time.",
   "scripts": {
     "dev": "python scripts/preview.py",
     "check": "node --check app/main.js && node --check app/device.js && python scripts/check.py",

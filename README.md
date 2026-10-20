@@ -1,6 +1,6 @@
 # HezFrame
 
-A quiet Samsung TV home screen, adapted from CleanFrame.
+A quiet Samsung TV home screen with your apps, photographs and the time.
 
 Photo backgrounds, large app names, a clock, remote navigation, and local appearance settings. The default Home order is Stremio, YouTube, Netflix, Disney+, Prime Video, and Apple TV. Apps open their installed native versions; HezFrame does not provide streaming content or accounts.
 
@@ -28,12 +28,12 @@ Open http://localhost:4795/home/. Use arrow keys, Enter and Escape. The browser 
 
 The unsigned export is `dist/HezFrame-public-unsigned.wgt`. Installing requires Samsung's official SDK and your own Samsung signing certificates with your TV registered. Signing keys, device addresses, local setup records and signed packages are excluded from Git.
 
-The package/application identity is intentionally retained for updates to the existing installation. For an independent installation, generate your own identity and adapt the manifest, device self-filter and identity checks. The original `cleanframe.home.v1` preference key is retained for migration. The six-app order is applied once on upgrade; subsequent customization is preserved.
+The package/application identity is intentionally retained for updates to the existing installation. For an independent installation, generate your own identity and adapt the manifest, device self-filter and identity checks. The existing preference storage is retained for migration. The six-app order is applied once on upgrade; subsequent customization is preserved.
 
 ## Upstream documentation
 
-Documents under `docs/` and the native Home helper are inherited CleanFrame reference material. Their Mac paths, model assumptions and Tizen 9 Home-routing experiment do not describe this Q60B setup. Do not run the reference device scripts unchanged. Native Home changes are separate from installing the web app.
+Documents under `docs/` and the native Home helper are inherited reference material. Their Mac paths, model assumptions and Tizen 9 Home-routing experiment do not describe this Q60B setup. Do not run the reference device scripts unchanged. Native Home changes are separate from installing the web app.
 
 ## Credits and license
 
-Based on CleanFrame, under the MIT license. Original copyright and [third-party notices](THIRD_PARTY_NOTICES.md) are retained. Fonts, photographs and service logos retain their respective licenses. No affiliation with Samsung or the streaming services.
+Distributed under the [MIT license](LICENSE). Original copyright and [third-party notices](THIRD_PARTY_NOTICES.md) are retained. Fonts, photographs and service logos retain their respective licenses. No affiliation with Samsung or the streaming services.
