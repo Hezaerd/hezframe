@@ -24,7 +24,7 @@ The GitHub check workflow uses public fonts and browser validation. Check its re
 
 The existing private Git history contains the removed studies. Deleting current files does not remove those earlier versions. A separate clean Git history was prepared for the public copy, and the original history is backed up privately.
 
-The owner approved this publication route on 20 October 2026: keep the original GitHub repository private, rename it `CleanFrame-private-backup`, and create a fresh `CleanFrame` repository from the reviewed clean history. Validate the new remote source and hosted checks while private, then change only the new copy to public. Update local Git routing so the old history cannot be pushed into the public copy.
+The owner approved this publication route on 20 October 2026: keep the original GitHub repository private, rename it `Shore-private-backup`, and create a fresh `CleanFrame` repository from the reviewed clean history. Validate the new remote source and hosted checks while private, then change only the new copy to public. Update local Git routing so the old history cannot be pushed into the public copy.
 
 This route avoids relying on a force-push to erase earlier hosted objects. [GitHub documents](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository) that rewritten commits can remain accessible through cached views or references. The recommendation to retain the old repository privately follows from that limitation. The approval covers renaming the private repository, creating the clean copy and publishing it. Future device work, release uploads and changes to visibility need their own instructions.
 

@@ -44,7 +44,7 @@ try {
   await page.route('**/config.js', (route) =>
     route.fulfill({
       contentType: 'application/javascript',
-      body: "window.HezFrameConfig={wallpapers:{revision:2,initial:'missing',rotation:'invalid',playlist:['missing','forest','forest','cove']}};",
+      body: "window.ShoreConfig={wallpapers:{revision:2,initial:'missing',rotation:'invalid',playlist:['missing','forest','forest','cove']}};",
     }),
   );
   await page.reload();

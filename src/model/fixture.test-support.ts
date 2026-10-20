@@ -24,7 +24,7 @@ export const env = readEnv(
       wall('night', 'Desert stars'),
     ],
     CleanFramePrivateFontIDs: ['geist', 'newsreader'],
-    HezFrameConfig: {
+    ShoreConfig: {
       wallpapers: {
         revision: 1,
         initial: 'forest',

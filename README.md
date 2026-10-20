@@ -1,8 +1,10 @@
-# HezFrame
+# Shore
+
+![Shore logo](assets/branding/logo.png)
 
 A quiet Samsung TV home screen with your apps, photographs and the time.
 
-Photo backgrounds, large app names, a clock, remote navigation, and local appearance settings. The default Home order is Stremio, YouTube, Netflix, Disney+, Prime Video, and Apple TV. Apps open their installed native versions; HezFrame does not provide streaming content or accounts.
+Photo backgrounds, large app names, a clock, remote navigation, and local appearance settings. The default Home order is Stremio, YouTube, Netflix, Disney+, Prime Video, and Apple TV. Apps open their installed native versions; Shore does not provide streaming content or accounts.
 
 ## Current device status
 
@@ -26,7 +28,7 @@ npm run export:public
 
 Open http://localhost:5173/. Use arrow keys, Enter and Escape. The browser cannot launch TV apps. All public fonts and wallpaper assets are bundled.
 
-The unsigned export is `dist/HezFrame-public-unsigned.wgt`. Installing requires Samsung's official SDK and your own Samsung signing certificates with your TV registered. Signing keys, device addresses, local setup records and signed packages are excluded from Git.
+The unsigned export is `dist/Shore-public-unsigned.wgt`. Installing requires Samsung's official SDK and your own Samsung signing certificates with your TV registered. Signing keys, device addresses, local setup records and signed packages are excluded from Git.
 
 The package/application identity is intentionally retained for updates to the existing installation. For an independent installation, generate your own identity and adapt the manifest, device self-filter and identity checks. The existing preference storage is retained for migration. The six-app order is applied once on upgrade; subsequent customization is preserved.
 
@@ -55,7 +57,7 @@ On screen, use **Settings → Background → Wallpaper / Rotation**. Manual wall
 
 In `app/config.js`:
 
-- `cinema.idleSeconds` sets the idle delay (default 60 seconds); `dimAmount` sets the dark overlay strength (default 0.55). Dimming only affects HezFrame, pauses in panels, and wakes on keyboard/remote, pointer or touch input. It does not change the TV picture settings.
+- `cinema.idleSeconds` sets the idle delay (default 60 seconds); `dimAmount` sets the dark overlay strength (default 0.55). Dimming only affects Shore, pauses in panels, and wakes on keyboard/remote, pointer or touch input. It does not change the TV picture settings.
 - `crossfade.durationMs` sets the wallpaper fade (default 900 ms). The next photo is loaded before fading; reduced-motion preferences disable this animation.
 - `sounds.volume` sets click loudness from `0` to `1` (default `0.2`). OK/Back and pointer activation play the bundled click; arrow navigation, held-key repeats, a hidden app and waking cinema dimming stay silent. No TV volume setting is changed.
 - `greeting.name` adds an optional name, such as `Hezaerd`. Leave it empty for just “Good morning”, “Good afternoon” or “Good evening”, based on the TV's local time.

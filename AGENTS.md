@@ -1,6 +1,6 @@
-# HezFrame
+# Shore
 
-`src/` contains the app, written in React and TypeScript. `app/` contains `index.html`, `style.css`, the Tizen adapter `device.js`, the owner-editable `config.js` and the bundled assets. Vite compiles `src/` into `dist/web/hezframe.js` and copies `app/` beside it. Read `docs/development.md` and `docs/interaction-behaviour.md` before app changes. For a new contributor or a separate TV installation, also read `docs/for-agents.md`.
+`src/` contains the app, written in React and TypeScript. `app/` contains `index.html`, `style.css`, the Tizen adapter `device.js`, the owner-editable `config.js` and the bundled assets. Vite compiles `src/` into `dist/web/shore.js` and copies `app/` beside it. Read `docs/development.md` and `docs/interaction-behaviour.md` before app changes. For a new contributor or a separate TV installation, also read `docs/for-agents.md`.
 
 Change behaviour through the typed model in `src/model/`: actions go through the pure reducer, and storage, device, image, font and timer work runs at the edges in `src/platform/` and `src/controllers.ts`. Components in `src/view/` render from the store and read the DOM only to measure it. Browser checks drive the app through `window.ShoreQA` (`src/qa.ts`); keep the state shape it reports. Target Chrome 85 in the production build. Node tooling can use modern JavaScript. Preserve remote focus/navigation, preference migrations and cached rendering. Read `docs/assets.md` before changing images, glass geometry or icon sizing; keep live blur and pixel analysis off the TV animation path.
 

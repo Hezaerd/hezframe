@@ -40,4 +40,4 @@ The production bundle includes React, React DOM and Scheduler from the React pro
 
 ## UI click
 
-`app/assets/sounds/ui-click.mp3` was supplied by the maintainer, who confirmed permission to redistribute it with HezFrame. It is distributed with this project under the root MIT license. Source and preparation details are in `app/assets/sounds/SOURCES.json`.
+`app/assets/sounds/ui-click.mp3` was supplied by the maintainer, who confirmed permission to redistribute it with Shore. It is distributed with this project under the root MIT license. Source and preparation details are in `app/assets/sounds/SOURCES.json`.

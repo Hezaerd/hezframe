@@ -38,7 +38,7 @@ profile.chmod(0o600)
 result = subprocess.run([str(CLI), 'cli-config', 'default.profiles.path=' + str(profile)], capture_output=True, timeout=30)
 if result.returncode:
     raise SystemExit('SDK signing profile configuration failed.')
-unsigned = dist / 'CleanFrame-unsigned.wgt'
+unsigned = dist / 'Shore-unsigned.wgt'
 write_widget_archive(unsigned)
 signed_dir = dist / 'signed'
 signed_dir.mkdir(exist_ok=True)
@@ -82,6 +82,6 @@ signed = signed_dir / unsigned.name
 with zipfile.ZipFile(signed) as package:
     if not {'author-signature.xml', 'signature1.xml'}.issubset(package.namelist()):
         raise SystemExit('Package is missing its signing files.')
-target = dist / 'CleanFrame.wgt'
+target = dist / 'Shore.wgt'
 target.write_bytes(signed.read_bytes())
 print('Signed widget created: ' + str(target))

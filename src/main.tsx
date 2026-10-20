@@ -14,7 +14,7 @@ import { createStore, type Store } from './store.ts';
 import { App } from './view/App.tsx';
 
 const container = document.querySelector('#root');
-if (!container) throw new Error('Missing HezFrame root');
+if (!container) throw new Error('Missing Shore root');
 initTextMeasure(document);
 
 const env = readEnv(window, presetMinuteMs());

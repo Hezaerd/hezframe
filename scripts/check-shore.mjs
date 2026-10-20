@@ -32,7 +32,7 @@ try {
   await page.reload();
   await page.waitForFunction(() => window.ShoreQA && ShoreQA.state().shown);
   assert.deepEqual(await page.evaluate(() => ShoreQA.state().home), ['youtube', 'stremio']);
-  console.log('HezFrame defaults, upgrade appearance preservation and one-time migration passed.');
+  console.log('Shore defaults, upgrade appearance preservation and one-time migration passed.');
 } finally {
   await preview.close();
 }

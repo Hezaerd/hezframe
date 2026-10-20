@@ -12,7 +12,7 @@ All UI assets, public fonts and the fifteen wallpapers are bundled. This private
 
 ## Runtime map and compatibility
 
-- `app/index.html` loads the device adapter, the gallery, font and palette catalogues, `assets/icons/metrics.js` and `config.js`, then the app (`src/main.tsx` in development, `hezframe.js` in the widget), with `style.css`.
+- `app/index.html` loads the device adapter, the gallery, font and palette catalogues, `assets/icons/metrics.js` and `config.js`, then the app (`src/main.tsx` in development, `shore.js` in the widget), with `style.css`.
 - `src/model/` owns the app state. `prefs.ts` reads and migrates saved preferences, `navigation.ts` handles remote keys and focus for each view, `look.ts` loads and shows appearance and wallpaper changes, and `reducer.ts` applies every action. `src/store.ts` runs the reducer and the effects it returns.
 - `src/view/` renders the List and Dock layouts, panels and Settings from the store. `src/platform/` wraps storage, fonts, images and `device.js`; `src/controllers.ts` handles keys, visibility, idle dimming and rotation timers. `device.js` owns installed-app discovery and Tizen calls. Keep device details in that adapter.
 - The logical stage is 1920 x 1080, scaled uniformly to the viewport. Check at 1920 x 1080 and 1280 x 720. Glass geometry and cached materials must stay aligned.
@@ -32,9 +32,9 @@ This Mac's setup lives under `.local/` and is excluded from Git:
 - `certificates/ca/`: CA certificates from Samsung's Certificate Extension.
 - `device.json`: TV host address.
 
-`npm run package` builds the widget from `app/`, configures the workspace-local SDK and signing profile, then signs it with the official SDK. It writes `dist/CleanFrame-unsigned.wgt` and `dist/CleanFrame.wgt`. `scripts/font_assets.py` adds only the six approved local Pangram files when complete pairs are available, plus their generated CSS/catalogue. It never copies private fonts into `app/`. Public checkouts use Manrope, Geist and Newsreader.
+`npm run package` builds the widget from `app/`, configures the workspace-local SDK and signing profile, then signs it with the official SDK. It writes `dist/Shore-unsigned.wgt` and `dist/Shore.wgt`. `scripts/font_assets.py` adds only the six approved local Pangram files when complete pairs are available, plus their generated CSS/catalogue. It never copies private fonts into `app/`. Public checkouts use Manrope, Geist and Newsreader.
 
-`npm run export:public` is a separate offline, unsigned export. It always disables the proprietary overlay, includes the project/third-party notices and writes `dist/CleanFrame-public-unsigned.wgt`. It reads no signing credentials and contacts no TV. Use it for public build preparation; `npm run package` on this machine remains a personal build that can contain paid fonts. Asset release checks are listed in `docs/public-release.md`.
+`npm run export:public` is a separate offline, unsigned export. It always disables the proprietary overlay, includes the project/third-party notices and writes `dist/Shore-public-unsigned.wgt`. It reads no signing credentials and contacts no TV. Use it for public build preparation; `npm run package` on this machine remains a personal build that can contain paid fonts. Asset release checks are listed in `docs/public-release.md`.
 
 The SDK requires a terminal when it prompts for certificate passwords and whether to save them. The packaging script supplies the generated certificate password from the ignored private file and declines the optional password-saving prompts. It redacts that password from output. Login credentials are not required for routine packaging.
 

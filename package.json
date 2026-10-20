@@ -1,5 +1,5 @@
 {
-  "name": "hezframe",
+  "name": "shore",
   "version": "0.7.0",
   "private": true,
   "description": "A quiet Samsung TV home screen with your apps, photographs and the time.",
@@ -17,7 +17,7 @@
     "dev:public": "vite",
     "export:public": "npm run build && python scripts/export-public.py",
     "check:public": "python scripts/check-public.py",
-    "check:hezframe": "node scripts/check-hezframe.mjs",
+    "check:shore": "node scripts/check-shore.mjs",
     "check:wallpapers": "node scripts/check-wallpapers.mjs",
     "check:atmosphere": "node scripts/check-atmosphere.mjs",
     "check:tv-css": "node scripts/check-tv-css.mjs",

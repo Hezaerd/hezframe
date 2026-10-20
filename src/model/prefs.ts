@@ -60,7 +60,7 @@ export interface Loaded {
 }
 
 /**
- * Reads the current key, then the 0.5 key. A version-less save predates HezFrame and resets the
+ * Reads the current key, then the 0.5 key. A version-less save predates the HezFrame migration and resets the
  * Home apps; a save from another wallpaper revision takes the configured photo and rotation.
  */
 export function loadSaved(env: Env, read: (key: string) => string | null): Loaded {

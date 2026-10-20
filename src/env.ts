@@ -14,6 +14,7 @@ import type {
 
 declare global {
   interface Window {
+    ShoreConfig?: unknown;
     HezFrameConfig?: unknown;
     CleanFrameWallpapers?: unknown;
     CleanFrameAdaptiveInk?: unknown;
@@ -117,6 +118,7 @@ function parseIconMetrics(raw: unknown): Record<string, IconMetric | undefined> 
 
 /** The globals that `index.html` scripts define, plus the two browser capabilities read at startup. */
 export interface RuntimeGlobals {
+  ShoreConfig?: unknown;
   HezFrameConfig?: unknown;
   CleanFrameWallpapers?: unknown;
   CleanFrameAdaptiveInk?: unknown;
@@ -130,7 +132,7 @@ export interface RuntimeGlobals {
 export function readEnv(win: RuntimeGlobals, minuteMs: number): Env {
   const walls = parseWalls(win.CleanFrameWallpapers);
   const gallery = new Set(walls.map((w) => w.id));
-  const config = record(win.HezFrameConfig),
+  const config = record(win.ShoreConfig ?? win.HezFrameConfig),
     wallConfig = record(config.wallpapers);
   const rotation: WallId[] = [];
   for (const id of Array.isArray(wallConfig.playlist) ? wallConfig.playlist : [])

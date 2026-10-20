@@ -1,4 +1,4 @@
-"""Connect, inspect, install or launch CleanFrame. These commands preserve Home/startup settings."""
+"""Connect, inspect, install or launch Shore. These commands preserve Home/startup settings."""
 import argparse
 import hashlib
 import ipaddress
@@ -47,11 +47,11 @@ elif args.action == 'launch':
     if 'successfully launched' not in output:
         raise SystemExit('App launch was not confirmed. Check the TV.')
 else:
-    widget = ROOT / 'dist/CleanFrame.wgt'
+    widget = ROOT / 'dist/Shore.wgt'
     if not widget.exists():
         raise SystemExit('Run npm run package first.')
     digest = hashlib.sha256(widget.read_bytes()).hexdigest()[:12]
-    remote = '/home/owner/share/tmp/sdk_tools/CleanFrame-' + digest + '-' + str(time.time_ns()) + '.wgt'
+    remote = '/home/owner/share/tmp/sdk_tools/Shore-' + digest + '-' + str(time.time_ns()) + '.wgt'
     pushed = run('-s', serial, 'push', str(widget), remote)
     if '1 file(s) pushed' not in pushed or 'failed' in pushed.lower():
         raise SystemExit('Widget transfer was not confirmed.')
@@ -61,4 +61,4 @@ else:
     installed = run('-s', serial, 'shell', '0', 'applist', quiet=True)
     if app_id not in installed:
         raise SystemExit('App was not found in the installed-app list.')
-    print('CleanFrame installation confirmed. Startup defaults are unchanged.')
+    print('Shore installation confirmed. Startup defaults are unchanged.')

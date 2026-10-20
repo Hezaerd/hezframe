@@ -58,7 +58,7 @@ const cases = {
 const percentile = (values, p) => values.toSorted((a, b) => a - b)[Math.floor(values.length * p)];
 const bundleHash = (dir) =>
   createHash('sha256')
-    .update(readFileSync(resolve(dir, 'hezframe.js')))
+    .update(readFileSync(resolve(dir, 'shore.js')))
     .digest('hex');
 const report = {
   scope:

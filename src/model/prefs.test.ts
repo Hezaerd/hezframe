@@ -49,7 +49,7 @@ test('a save from another wallpaper revision takes the configured photo and rota
   assert.deepEqual([prefs.wall, prefs.mode, prefs.bg], ['forest', '5', 'photo']);
 });
 
-test('a save from before HezFrame resets Home to the six default apps', () => {
+test('a save from before the HezFrame migration resets Home to the six default apps', () => {
   const { prefs } = start(saved({ hezframeVersion: undefined, dock: ['netflix'] })).state();
   assert.deepEqual(prefs.home, [
     'stremio',
@@ -59,6 +59,14 @@ test('a save from before HezFrame resets Home to the six default apps', () => {
     'primevideo',
     'appletv',
   ]);
+});
+
+test('Shore accepts legacy owner configuration and prefers the new name when both exist', () => {
+  const document = { documentElement: { style: {} } };
+  const config = { sounds: { enabled: false, volume: 0.1 } };
+  const legacy = readEnv({ document, HezFrameConfig: config }, 60_000);
+  assert.deepEqual(readEnv({ document, ShoreConfig: config }, 60_000), legacy);
+  assert.deepEqual(readEnv({ document, ShoreConfig: config, HezFrameConfig: {} }, 60_000), legacy);
 });
 
 test('saved native apps keep their id and name, unsafe ids are dropped and Home holds nine', () => {
@@ -119,7 +127,7 @@ test('Each time Home opens advances the photo once per cold start, not for a fir
   const openByDefault = readEnv(
     {
       CleanFrameWallpapers: env.walls,
-      HezFrameConfig: { wallpapers: { initial: 'cove', rotation: 'open' } },
+      ShoreConfig: { wallpapers: { initial: 'cove', rotation: 'open' } },
       document: { documentElement: { style: {} } },
     },
     60_000,

@@ -43,7 +43,7 @@
   }
   function unavailable(done) {
     done({
-      message: 'Open HezFrame on the TV to use this control.',
+      message: 'Open Shore on the TV to use this control.',
       detail: 'The web preview cannot control the TV.',
     });
   }
@@ -52,7 +52,7 @@
       message: 'The TV could not open this screen.',
       detail:
         (err && (err.message || err.name)) ||
-        'Try again, or press the remote’s Home button to return to HezFrame.',
+        'Try again, or press the remote’s Home button to return to Shore.',
     };
   }
   function bounded(done) {

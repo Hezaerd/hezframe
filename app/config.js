@@ -1,7 +1,7 @@
 /* Wallpaper IDs and credits: assets/wallpapers/SOURCES.json.
    Bundled Unsplash photographs work offline; no API key is needed.
    Increase revision to apply changed defaults to existing installations. */
-window.HezFrameConfig = {
+window.ShoreConfig = {
   cinema: { enabled: true, idleSeconds: 60, dimAmount: 0.55 },
   crossfade: { enabled: true, durationMs: 900 },
   greeting: { enabled: true, name: '' },

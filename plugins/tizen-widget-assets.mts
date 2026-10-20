@@ -58,7 +58,7 @@ export function tizenWidgetAssets({ projectRoot }: TizenWidgetAssetsOptions): Pl
 
       const html = readFileSync(resolve(source, 'index.html'), 'utf8').replace(
         '<script type="module" src="../src/main.tsx"></script>',
-        '<script src="hezframe.js"></script>',
+        '<script src="shore.js"></script>',
       );
       writeFileSync(resolve(out, 'index.html'), html);
     },

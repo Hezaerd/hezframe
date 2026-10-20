@@ -17,9 +17,9 @@ export default defineConfig(({ command }) => ({
     target: `chrome${TV_CHROME_MAJOR}`,
     lib: {
       entry: resolve(root, 'src/main.tsx'),
-      name: 'HezFrame',
+      name: 'Shore',
       formats: ['iife'],
-      fileName: () => 'hezframe.js',
+      fileName: () => 'shore.js',
     },
     sourcemap: false,
   },

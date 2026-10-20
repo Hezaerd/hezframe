@@ -6,7 +6,7 @@ import zipfile
 
 from font_assets import ROOT, write_widget_archive
 
-output = ROOT / 'dist/HezFrame-public-unsigned.wgt'
+output = ROOT / 'dist/Shore-public-unsigned.wgt'
 output.parent.mkdir(exist_ok=True)
 write_widget_archive(output, include_private=False)
 with zipfile.ZipFile(output, 'a', zipfile.ZIP_DEFLATED) as archive:
