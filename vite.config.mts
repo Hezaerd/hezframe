@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-import { tizenWidgetAssets } from './plugins/tizen-widget-assets.mts';
+import { tizenWidgetAssets, TV_CHROME_MAJOR } from './plugins/tizen-widget-assets.mts';
 import { resolve } from 'node:path';
 
 const root = process.cwd();
@@ -10,7 +10,7 @@ export default defineConfig(({ command }) => ({
   plugins: [react(), tizenWidgetAssets({ projectRoot: root })],
   server: { host: '127.0.0.1', port: 5173, strictPort: true },
   build: {
-    outDir: resolve(root, 'dist/web'), emptyOutDir: true, target: 'chrome85',
+    outDir: resolve(root, 'dist/web'), emptyOutDir: true, target: `chrome${TV_CHROME_MAJOR}`,
     lib: { entry: resolve(root, 'src/main.tsx'), name: 'HezFrame', formats: ['iife'], fileName: () => 'hezframe.js' },
     sourcemap: false
   },

@@ -1,6 +1,9 @@
-import { cpSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { cpSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { transform } from 'lightningcss';
 import type { Plugin, ResolvedConfig } from 'vite';
+
+export const TV_CHROME_MAJOR = 85;
 
 export interface TizenWidgetAssetsOptions {
   projectRoot: string;
@@ -25,6 +28,13 @@ export function tizenWidgetAssets({ projectRoot }: TizenWidgetAssetsOptions): Pl
       const out = resolve(source, config.build.outDir);
       for (const file of ['assets', 'style.css', 'device.js', 'config.js', 'config.xml', 'icon.png']) {
         cpSync(resolve(source, file), resolve(out, file), { recursive: true });
+      }
+
+      for (const file of readdirSync(out, { recursive: true, encoding: 'utf8' })) {
+        if (!file.endsWith('.css')) continue;
+        const filename = resolve(out, file);
+        const { code } = transform({ filename, code: readFileSync(filename), targets: { chrome: TV_CHROME_MAJOR << 16 } });
+        writeFileSync(filename, code);
       }
 
       mkdirSync(resolve(out, 'licenses'), { recursive: true });

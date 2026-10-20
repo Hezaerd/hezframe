@@ -17,7 +17,8 @@
     "check:hezframe": "node scripts/check-hezframe.mjs",
     "check:wallpapers": "node scripts/check-wallpapers.mjs",
     "check:atmosphere": "node scripts/check-atmosphere.mjs",
-    "build": "tsc --noEmit && vite build",
+    "check:tv-css": "node scripts/check-tv-css.mjs",
+    "build": "tsc --noEmit && vite build && npm run check:tv-css",
     "preview": "python scripts/preview.py --public-fonts",
     "precheck:browser": "npm run build"
   },
@@ -26,6 +27,7 @@
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "lightningcss": "^1.33.0",
     "playwright": "1.64.1",
     "typescript": "^7.0.2",
     "vite": "^8.3.4"
