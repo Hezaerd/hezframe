@@ -6,7 +6,7 @@ export const StoreContext = createContext<Store | null>(null);
 
 export function useStore(): Store {
   const store = useContext(StoreContext);
-  if (!store) throw Error('StoreContext is missing');
+  if (!store) throw new Error('StoreContext is missing');
   return store;
 }
 

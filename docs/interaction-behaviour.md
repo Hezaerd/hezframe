@@ -14,14 +14,14 @@
 
 Settings opens a grouped overview: Background, Layout, Typography, Focus, Apps on Home and Samsung. OK opens a group. Appearance groups use a two-pane screen with visible choices on the left and the committed Home preview on the right.
 
-| Group | Choices |
-| --- | --- |
-| Background | Photo, Light, Dark; Wallpaper and Rotation when Photo is active |
-| Layout | List or Dock; independent Text, Icons or Both choices for apps and Home controls |
-| Typography | Manrope, Neue Montreal, Mori, Pangram Sans, Geist and Newsreader, when available |
-| Focus | Type or Glass; Soft, Frost or Clear tint material |
-| Apps on Home | Membership and arrangement editor |
-| Samsung | Samsung Home and TV settings |
+| Group        | Choices                                                                          |
+| ------------ | -------------------------------------------------------------------------------- |
+| Background   | Photo, Light, Dark; Wallpaper and Rotation when Photo is active                  |
+| Layout       | List or Dock; independent Text, Icons or Both choices for apps and Home controls |
+| Typography   | Manrope, Neue Montreal, Mori, Pangram Sans, Geist and Newsreader, when available |
+| Focus        | Type or Glass; Soft, Frost or Clear tint material                                |
+| Apps on Home | Membership and arrangement editor                                                |
+| Samsung      | Samsung Home and TV settings                                                     |
 
 Up/Down moves between rows. Left/Right moves between choices in a horizontal row. Focus alone changes neither the preview nor saved preferences in these appearance groups. Wallpaper has its own temporary photo preview, described below. OK applies the focused value. A checkmark identifies the applied value; the filled plate identifies remote focus. Applying the current value does not write again.
 

@@ -10,15 +10,15 @@ Installing an app and assigning the system Home launcher are separate jobs. You 
 
 ## What worked on the reference TV
 
-| Item | Recorded result from 19 October 2026 |
-| --- | --- |
-| Model | Samsung 55-inch The Frame, **QA55LS03DAWXXY**, LS03D |
-| Firmware | **T-PTMDUABC-0090-2130.0** |
-| Developer capability | **Tizen 9.0, ARMv7, 32-bit** |
-| Signed launcher | Installed and opened; Netflix and YouTube launched with the normal remote |
-| Native Home routing | Pressing the physical Home button from Netflix returned to the custom launcher |
-| Startup | Native settings named the launcher. Normal power-on after Netflix was only tentatively reported and still needs a definite physical check |
-| Samsung Home escape and Art Mode | The corrected escape target and native Art Mode behaviour still need physical confirmation |
+| Item                             | Recorded result from 19 October 2026                                                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Model                            | Samsung 55-inch The Frame, **QA55LS03DAWXXY**, LS03D                                                                                      |
+| Firmware                         | **T-PTMDUABC-0090-2130.0**                                                                                                                |
+| Developer capability             | **Tizen 9.0, ARMv7, 32-bit**                                                                                                              |
+| Signed launcher                  | Installed and opened; Netflix and YouTube launched with the normal remote                                                                 |
+| Native Home routing              | Pressing the physical Home button from Netflix returned to the custom launcher                                                            |
+| Startup                          | Native settings named the launcher. Normal power-on after Netflix was only tentatively reported and still needs a definite physical check |
+| Samsung Home escape and Art Mode | The corrected escape target and native Art Mode behaviour still need physical confirmation                                                |
 
 These are results on one TV. Matching the model alone does not establish compatibility. Your agent must check your firmware and capabilities before attempting native Home changes.
 
@@ -36,13 +36,13 @@ SDB is Samsung's developer connection tool. Your agent should check the current 
 
 The labels below are placeholders, not values to paste into the TV or SDK. Ask your agent to replace them with your actual configuration before producing commands.
 
-| Placeholder | Meaning |
-| --- | --- |
-| `<PC_IP>` and `<TV_IP>` | Your computer's and TV's local addresses, respectively |
-| `<TV_DUID>` | Your TV's unique device identifier, used privately for its distributor certificate |
-| `<PACKAGE_ID>` and `<APP_ID>` | Your launcher's SDK-generated package and application identities |
-| `<SIGNING_PROFILE>` | Your own local certificate profile name |
-| `<SIGNED_WIDGET>` | The path to your signed `.wgt` installation package |
+| Placeholder                   | Meaning                                                                            |
+| ----------------------------- | ---------------------------------------------------------------------------------- |
+| `<PC_IP>` and `<TV_IP>`       | Your computer's and TV's local addresses, respectively                             |
+| `<TV_DUID>`                   | Your TV's unique device identifier, used privately for its distributor certificate |
+| `<PACKAGE_ID>` and `<APP_ID>` | Your launcher's SDK-generated package and application identities                   |
+| `<SIGNING_PROFILE>`           | Your own local certificate profile name                                            |
+| `<SIGNED_WIDGET>`             | The path to your signed `.wgt` installation package                                |
 
 The package ID, application ID and signing profile are different values. Let the official SDK create a valid app identity. Give the launcher your own display name and keep its identity and author certificate stable for updates. The native Home helper must target **that same application ID**.
 
@@ -52,13 +52,13 @@ The agent should retrieve information directly from your computer, project files
 
 The agent should extract the requested fields, repeat them for you to check and flag unclear characters. It must ask for a clearer photo or exact transcription when a value is ambiguous. Crop or cover serial numbers, account details and other fields that aren't needed.
 
-| Information | First route | Alternative |
-| --- | --- | --- |
-| Model and full firmware string | Photo or typed text from About This TV | Confirm through available device information after connection |
-| TV local IP | Photo or typed text from Network Status or IP Settings | An identified entry in your router's device list |
-| Computer local IP | Agent checks the active network interface and route to the TV | You read it from the computer's network settings |
-| TV DUID | Select the connected TV in Samsung's certificate tools | Read Unique Device ID in the TV's support menu and enter it locally |
-| Installed apps and launch IDs | Agent reads the connected TV's application list | A photo or typed list of app names helps choose shortcuts; retrieve the actual IDs after connection |
+| Information                    | First route                                                   | Alternative                                                                                         |
+| ------------------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Model and full firmware string | Photo or typed text from About This TV                        | Confirm through available device information after connection                                       |
+| TV local IP                    | Photo or typed text from Network Status or IP Settings        | An identified entry in your router's device list                                                    |
+| Computer local IP              | Agent checks the active network interface and route to the TV | You read it from the computer's network settings                                                    |
+| TV DUID                        | Select the connected TV in Samsung's certificate tools        | Read Unique Device ID in the TV's support menu and enter it locally                                 |
+| Installed apps and launch IDs  | Agent reads the connected TV's application list               | A photo or typed list of app names helps choose shortcuts; retrieve the actual IDs after connection |
 
 Keep certificates, passwords, account tokens and recovery files in private local storage. Complete account passwords and verification codes yourself in Samsung's sign-in window. The agent should record the certificate/profile paths and completion status without collecting your login secrets.
 
@@ -78,10 +78,10 @@ Copy this prompt, then use the stage prompts one at a time:
 
 **On the computer:** have the agent inspect the active network interface and identify the local address used to reach the TV. If it lacks local tools, it should guide you to the computer's network settings and ask for a photo, screenshot or typed address. A VPN address or another adapter's address may be wrong.
 
-| Where the address goes | Use |
-| --- | --- |
+| Where the address goes              | Use                                |
+| ----------------------------------- | ---------------------------------- |
 | TV Developer Mode popup, Host PC IP | **Computer's local IP**, `<PC_IP>` |
-| Computer's SDB connection | **TV's local IP**, `<TV_IP>` |
+| Computer's SDB connection           | **TV's local IP**, `<TV_IP>`       |
 
 Keep the setup record private and leave actual addresses and device identifiers out of shared copies of this guide. If DHCP changes an address later, update the relevant configuration.
 
@@ -175,12 +175,12 @@ For existing source, have the agent inspect its manifest first and create a cons
 
 Your agent must read **your installed-app list**, present the app names for you to choose from, and map those choices to the actual launch IDs. If the connection is not ready, a photo of your Apps screen or a typed list can establish your preferences; the agent must retrieve and verify the IDs after connection. Don't assume Netflix, YouTube or any other service is installed, and don't install extra services to match the reference setup.
 
-| Area | Required behaviour |
-| --- | --- |
-| Home shortcuts | Include your chosen installed apps and use their actual launch IDs |
-| Missing apps | Omit or clearly mark unavailable shortcuts; don't fabricate a successful launch |
-| App chooser | If included, discover installed consumer apps and check filtering on your TV |
-| Updates | Preserve your choices and order; check again if installed apps or launch IDs change |
+| Area           | Required behaviour                                                                  |
+| -------------- | ----------------------------------------------------------------------------------- |
+| Home shortcuts | Include your chosen installed apps and use their actual launch IDs                  |
+| Missing apps   | Omit or clearly mark unavailable shortcuts; don't fabricate a successful launch     |
+| App chooser    | If included, discover installed consumer apps and check filtering on your TV        |
+| Updates        | Preserve your choices and order; check again if installed apps or launch IDs change |
 
 If adapting an app with a fixed catalogue, the agent must adjust it. A remove/reorder editor does not automatically support adding arbitrary apps. Check icons and navigation for the chosen set.
 
@@ -232,12 +232,12 @@ Your agent must review or adapt a native helper implementation for your exact fi
 
 The baseline must include the native Home assignment plus:
 
-| Setting | Type |
-| --- | --- |
-| `db/appfw/home_appid` | String |
-| `db/appfw/startup_appid` | String |
-| `db/appfw/booting_appid_backup` | String |
-| `db/first_screen/type` | String |
+| Setting                                    | Type    |
+| ------------------------------------------ | ------- |
+| `db/appfw/home_appid`                      | String  |
+| `db/appfw/startup_appid`                   | String  |
+| `db/appfw/booting_appid_backup`            | String  |
+| `db/first_screen/type`                     | String  |
 | `db/menu/smart_hub/ontvsetting/auto_start` | Integer |
 
 Use native value setters rather than direct database edits. Preserve permissions and unrelated settings. Keep the original snapshot and diagnostics private.
@@ -260,13 +260,13 @@ Exercise **restore**, query the values and check the physical Home destination b
 
 ### Physical checks before calling it complete
 
-| Check | Required observation |
-| --- | --- |
-| Home from your first chosen app | Physical Home opens your launcher |
-| Home from another installed app | Physical Home opens your launcher |
-| Samsung Home escape | Explicit Samsung Home action visibly opens Smart Hub; Home returns to your launcher |
-| Power after streaming | Use your normal Power routine after streaming, wait, then wake the TV; record the screen that actually appears |
-| Art Mode and full restart | Check your usual Art Mode/wake routine and a separately agreed full restart; record them separately from standby |
+| Check                           | Required observation                                                                                             |
+| ------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Home from your first chosen app | Physical Home opens your launcher                                                                                |
+| Home from another installed app | Physical Home opens your launcher                                                                                |
+| Samsung Home escape             | Explicit Samsung Home action visibly opens Smart Hub; Home returns to your launcher                              |
+| Power after streaming           | Use your normal Power routine after streaming, wait, then wake the TV; record the screen that actually appears   |
+| Art Mode and full restart       | Check your usual Art Mode/wake routine and a separately agreed full restart; record them separately from standby |
 
 Netflix kept Back inside its own app in the reference test. Repeated Back is not a universal exit command. A wallpaper inside your launcher also does not establish native Art Mode behaviour.
 

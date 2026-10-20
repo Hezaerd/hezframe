@@ -26,25 +26,41 @@ export function tizenWidgetAssets({ projectRoot }: TizenWidgetAssetsOptions): Pl
     writeBundle() {
       const source = config.root;
       const out = resolve(source, config.build.outDir);
-      for (const file of ['assets', 'style.css', 'device.js', 'config.js', 'config.xml', 'icon.png']) {
+      for (const file of [
+        'assets',
+        'style.css',
+        'device.js',
+        'config.js',
+        'config.xml',
+        'icon.png',
+      ]) {
         cpSync(resolve(source, file), resolve(out, file), { recursive: true });
       }
 
       for (const file of readdirSync(out, { recursive: true, encoding: 'utf8' })) {
         if (!file.endsWith('.css')) continue;
         const filename = resolve(out, file);
-        const { code } = transform({ filename, code: readFileSync(filename), targets: { chrome: TV_CHROME_MAJOR << 16 } });
+        const { code } = transform({
+          filename,
+          code: readFileSync(filename),
+          targets: { chrome: TV_CHROME_MAJOR << 16 },
+        });
         writeFileSync(filename, code);
       }
 
       mkdirSync(resolve(out, 'licenses'), { recursive: true });
       for (const name of ['react', 'react-dom', 'scheduler']) {
-        cpSync(resolve(projectRoot, 'node_modules', name, 'LICENSE'), resolve(out, 'licenses', name + '.txt'));
+        cpSync(
+          resolve(projectRoot, 'node_modules', name, 'LICENSE'),
+          resolve(out, 'licenses', name + '.txt'),
+        );
       }
 
-      const html = readFileSync(resolve(source, 'index.html'), 'utf8')
-        .replace('<script type="module" src="../src/main.tsx"></script>', '<script src="hezframe.js"></script>');
+      const html = readFileSync(resolve(source, 'index.html'), 'utf8').replace(
+        '<script type="module" src="../src/main.tsx"></script>',
+        '<script src="hezframe.js"></script>',
+      );
       writeFileSync(resolve(out, 'index.html'), html);
-    }
+    },
   };
 }

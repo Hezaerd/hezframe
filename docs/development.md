@@ -49,7 +49,7 @@ For new certificates, use Samsung's [certificate setup](https://developer.samsun
 Create `.local/device.json` with:
 
 ```json
-{"host": "YOUR_TV_IP_ADDRESS"}
+{ "host": "YOUR_TV_IP_ADDRESS" }
 ```
 
 For developer access, connect the TV and Mac to the same network, enable Developer Mode in Apps → App Settings → 12345 and enter the Mac's local address. Fully restart the TV if the developer port remains closed.

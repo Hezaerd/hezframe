@@ -5,9 +5,13 @@ import { reduce } from './reducer.ts';
 import { top } from './state.ts';
 import type { Effect, State } from './types.ts';
 
-const devices = (effects: Effect[]) => effects.filter(e => e.kind === 'device').map(e => e.kind === 'device' ? e.op : null);
-const writes = (effects: Effect[]) => effects.filter(e => e.kind === 'persist').length;
-const focus = (s: State) => { const t = top(s); return t.kind === 'home' ? t.zone + ':' + (t.zone === 'util' ? t.u : s.session.sel) : t.kind; };
+const devices = (effects: Effect[]) =>
+  effects.filter((e) => e.kind === 'device').map((e) => (e.kind === 'device' ? e.op : null));
+const writes = (effects: Effect[]) => effects.filter((e) => e.kind === 'persist').length;
+const focus = (s: State) => {
+  const t = top(s);
+  return t.kind === 'home' ? t.zone + ':' + (t.zone === 'util' ? t.u : s.session.sel) : t.kind;
+};
 
 test('Dock moves along the apps without wrapping and Up reaches the Home controls', () => {
   const app = start();
@@ -38,15 +42,22 @@ test('List moves with Up and Down and Right reaches the controls', () => {
 });
 
 test('focus never launches; OK launches once with the native id and remembers the app', () => {
-  const app = start(), from = app.effects.length;
+  const app = start(),
+    from = app.effects.length;
   app.keys('right', 'left', 'right');
   assert.equal(devices(app.newEffects(from)).length, 0);
   app.keys('ok', 'ok');
-  assert.deepEqual(devices(app.newEffects(from)), [{ op: 'launch', appId: 'MCmYXNxgcu.DisneyPlus' }]);
+  assert.deepEqual(devices(app.newEffects(from)), [
+    { op: 'launch', appId: 'MCmYXNxgcu.DisneyPlus' },
+  ]);
   assert.equal(app.state().prefs.lastApp, 'disneyplus');
   app.dispatch({ type: 'deviceDone', title: 'Disney+', error: null });
   app.keys('ok');
-  assert.equal(devices(app.newEffects(from)).length, 2, 'the next OK launches again once the TV has answered');
+  assert.equal(
+    devices(app.newEffects(from)).length,
+    2,
+    'the next OK launches again once the TV has answered',
+  );
 });
 
 test('a failed launch shows the TV error and Back returns Home', () => {
@@ -54,13 +65,16 @@ test('a failed launch shows the TV error and Back returns Home', () => {
   app.keys('ok');
   app.dispatch({ type: 'deviceDone', title: 'Netflix', error: { message: 'App unavailable' } });
   const t = top(app.state());
-  assert.ok(t.kind === 'message' && t.content.title === 'Netflix' && t.content.line === 'App unavailable');
+  assert.ok(
+    t.kind === 'message' && t.content.title === 'Netflix' && t.content.line === 'App unavailable',
+  );
   app.keys('back');
   assert.equal(top(app.state()).kind, 'home');
 });
 
 test('Back on Home asks before opening Samsung Home', () => {
-  const app = start(), from = app.effects.length;
+  const app = start(),
+    from = app.effects.length;
   app.keys('back');
   assert.equal(top(app.state()).kind, 'message');
   app.keys('ok');
@@ -76,7 +90,8 @@ test('Settings arrows browse without writing; OK applies the focused value once'
   app.keys('down', 'ok');
   const t = top(app.state());
   assert.ok(t.kind === 'appearance' && t.group === 'layout');
-  const before = app.state().prefs, from = app.effects.length;
+  const before = app.state().prefs,
+    from = app.effects.length;
   app.keys('right', 'left', 'down', 'right', 'up');
   assert.equal(writes(app.newEffects(from)), 0);
   assert.deepEqual(app.state().prefs, before);
@@ -92,7 +107,12 @@ test('Settings arrows browse without writing; OK applies the focused value once'
 test('a refused write keeps the committed Home and storage, and OK retries the same change', () => {
   const app = start();
   app.dispatch({ type: 'scene', name: 'editor' });
-  app.dispatch({ type: 'catalogLoaded', request: app.state().catalog.request, error: null, entries: [] });
+  app.dispatch({
+    type: 'catalogLoaded',
+    request: app.state().catalog.request,
+    error: null,
+    entries: [],
+  });
   const before = app.stored();
   app.refuseWrites(true);
   app.keys('right', 'ok');
@@ -108,8 +128,13 @@ test('a refused write keeps the committed Home and storage, and OK retries the s
 test('Apps on Home: removal, undo, the nine-app cap and the last app', () => {
   const app = start();
   app.dispatch({ type: 'scene', name: 'editor' });
-  app.dispatch({ type: 'catalogLoaded', request: app.state().catalog.request, error: null, entries: [{ appId: 'AbCdEf1234.FamilyApp', name: 'Family', brand: '', icon: '' }] });
-  const full = app.state().prefs.home.slice();
+  app.dispatch({
+    type: 'catalogLoaded',
+    request: app.state().catalog.request,
+    error: null,
+    entries: [{ appId: 'AbCdEf1234.FamilyApp', name: 'Family', brand: '', icon: '' }],
+  });
+  const full = [...app.state().prefs.home];
   app.keys('down', 'right', 'right');
   app.keys('ok');
   assert.equal(app.state().session.note, 'Home holds nine apps. Remove one first.');
@@ -133,7 +158,11 @@ test('wallpaper browsing waits for focus to settle, never saves, and OK applies 
   assert.equal(top(app.state()).kind, 'wallpaper');
   const from = app.effects.length;
   app.keys('down', 'down');
-  assert.equal(app.newEffects(from).filter(e => e.kind === 'loadBundle').length, 0, 'no photo loads while focus moves');
+  assert.equal(
+    app.newEffects(from).filter((e) => e.kind === 'loadBundle').length,
+    0,
+    'no photo loads while focus moves',
+  );
   app.timers();
   app.settle();
   assert.equal(app.state().look.shown?.wall, 'forest');
@@ -167,19 +196,25 @@ test('Back cancels a pending appearance change and a late load cannot apply it',
 test('an older load that finishes after a newer change cannot apply the older choice', () => {
   const app = start();
   app.dispatch({ type: 'look', patch: { material: 'frost' } });
-  const older = app.waiting.find(e => e.kind === 'loadBundle');
+  const older = app.waiting.find((e) => e.kind === 'loadBundle');
   app.dispatch({ type: 'look', patch: { material: 'tint' } });
   assert.ok(older && older.kind === 'loadBundle');
   app.waiting.splice(app.waiting.indexOf(older), 1);
   app.dispatch({ type: 'bundleLoaded', token: older.token, bundle: older.bundle, ok: true });
-  for (const e of app.waiting.filter(x => x.kind === 'frames')) if (e.kind === 'frames') app.dispatch(e.action);
+  for (const e of app.waiting.filter((x) => x.kind === 'frames'))
+    if (e.kind === 'frames') app.dispatch(e.action);
   app.settle();
   assert.equal(app.state().prefs.material, 'tint');
-  assert.deepEqual(app.state().look.installed, { wall: 'misty', material: 'tint' }, 'the photo layers show the tint material');
+  assert.deepEqual(
+    app.state().look.installed,
+    { wall: 'misty', material: 'tint' },
+    'the photo layers show the tint material',
+  );
 });
 
 test('reducing never changes the state it was given', () => {
-  const app = start(), s = app.state();
+  const app = start(),
+    s = app.state();
   const frozen = JSON.stringify({ ...s, apps: [...s.apps] });
   reduce(s, { type: 'key', key: 'right' });
   reduce(s, { type: 'scene', name: 'editor' });

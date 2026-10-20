@@ -37,6 +37,7 @@ Documents under `docs/` and the native Home helper are inherited reference mater
 ## Credits and license
 
 Distributed under the [MIT license](LICENSE). Original copyright and [third-party notices](THIRD_PARTY_NOTICES.md) are retained. Fonts, photographs and service logos retain their respective licenses. No affiliation with Samsung or the streaming services.
+
 ## Wallpaper configuration
 
 `app/config.js` controls the Unsplash nature playlist, starting photo and default rotation. Photos are bundled locally with their credits in `app/assets/wallpapers/SOURCES.json`, so rotation works offline without an API key.
@@ -59,7 +60,6 @@ In `app/config.js`:
 - `greeting.name` adds an optional name, such as `Hezaerd`. Leave it empty for just “Good morning”, “Good afternoon” or “Good evening”, based on the TV's local time.
 - Each feature's `enabled` setting is the default for new preferences. Saved on-screen choices take precedence.
 - `wallpapers.collections` defines collection names and their wallpaper IDs; `wallpapers.collection` sets the initial collection. Photos and their pre-rendered materials must exist in the bundled gallery.
-
 
 ## How the app is built
 

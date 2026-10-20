@@ -1,11 +1,36 @@
 import { MODES, PRIMARY_IDS } from './tables.ts';
-import type { App, AppId, Collection, CollectionId, CommitIntent, DetailView, Effect, Env, FontId, Look, Overlay, Prefs, State, View, ViewKind, Wallpaper, WallId } from './types.ts';
+import type {
+  App,
+  AppId,
+  Collection,
+  CollectionId,
+  CommitIntent,
+  DetailView,
+  Effect,
+  Env,
+  FontId,
+  Look,
+  Overlay,
+  Prefs,
+  State,
+  View,
+  ViewKind,
+  Wallpaper,
+  WallId,
+} from './types.ts';
 
 /** A copy of the parts of State an action can change. Handlers mutate it; the input state is untouched. */
-export interface Draft extends State { fx: Effect[] }
+export interface Draft extends State {
+  fx: Effect[];
+}
 
 function copyOverlay(v: Overlay): Overlay {
-  if (v.kind === 'editor') return { ...v, lifted: v.lifted && { ...v.lifted, order: v.lifted.order.slice() }, otherReturn: { ...v.otherReturn } };
+  if (v.kind === 'editor')
+    return {
+      ...v,
+      lifted: v.lifted && { ...v.lifted, order: [...v.lifted.order] },
+      otherReturn: { ...v.otherReturn },
+    };
   return { ...v };
 }
 
@@ -15,10 +40,15 @@ export function draft(s: State): Draft {
     ...s,
     catalog: { ...s.catalog },
     stack: [{ ...home }, ...rest.map(copyOverlay)],
-    session: { ...s.session, detailFocus: { ...s.session.detailFocus }, undo: s.session.undo.slice(), removedAt: { ...s.session.removedAt } },
+    session: {
+      ...s.session,
+      detailFocus: { ...s.session.detailFocus },
+      undo: [...s.session.undo],
+      removedAt: { ...s.session.removedAt },
+    },
     look: { ...s.look },
     scroll: { ...s.scroll },
-    fx: []
+    fx: [],
   };
 }
 
@@ -39,7 +69,7 @@ export function pop(d: Draft): void {
 
 export function app(s: State, id: AppId): App {
   const a = s.apps.get(id);
-  if (!a) throw Error('Unknown app: ' + id);
+  if (!a) throw new Error('Unknown app: ' + id);
   return a;
 }
 export function wallById(env: Env, id: WallId): Wallpaper {
@@ -71,23 +101,27 @@ export function homeFont(s: State): FontId {
 export function availableFonts(s: State): FontId[] {
   const out: FontId[] = ['manrope'];
   for (const id of ['montreal', 'mori', 'pangram', 'geist', 'newsreader'] as const) {
-    if (s.env.privateFonts.indexOf(id) >= 0 && s.fonts.unavailable.indexOf(id) < 0) out.push(id);
+    if (s.env.privateFonts.includes(id) && !s.fonts.unavailable.includes(id)) out.push(id);
   }
   return out;
 }
 export function onHome(s: State, id: AppId): boolean {
-  return s.prefs.home.indexOf(id) >= 0;
+  return s.prefs.home.includes(id);
 }
 export function isPrimary(id: AppId): boolean {
-  return PRIMARY_IDS.indexOf(id) >= 0;
+  return PRIMARY_IDS.includes(id);
 }
 
 /** Prefs carrying the given Home order; every other field keeps its committed value. */
-export function next(d: State, home: AppId[] = d.prefs.home.slice(), recent: AppId[] = d.prefs.recent.slice()): Prefs {
+export function next(
+  d: State,
+  home: AppId[] = [...d.prefs.home],
+  recent: AppId[] = [...d.prefs.recent],
+): Prefs {
   return { ...d.prefs, home, recent };
 }
 export function snap(d: State) {
-  return { home: d.prefs.home.slice(), recent: d.prefs.recent.slice() };
+  return { home: [...d.prefs.home], recent: [...d.prefs.recent] };
 }
 
 /** Requests a storage write. The runner answers with `persisted`, and the intent's continuation runs. */
@@ -102,7 +136,10 @@ export function token(d: Draft): number {
 export function ensureSel(d: Draft): number {
   const h = d.prefs.home;
   let i = d.session.sel ? h.indexOf(d.session.sel) : -1;
-  if (i < 0) { i = Math.max(0, Math.min(d.session.selIdx, h.length - 1)); d.session.sel = h[i]; }
+  if (i < 0) {
+    i = Math.max(0, Math.min(d.session.selIdx, h.length - 1));
+    d.session.sel = h[i];
+  }
   d.session.selIdx = i;
   return i;
 }
@@ -118,7 +155,12 @@ export function isSettingsDetail(kind: ViewKind): boolean {
   return kind === 'appearance' || kind === 'wallpaper';
 }
 
-export function detailFocus(d: Draft, t: DetailView, item: { action: string; axis?: string }, column?: number): void {
+export function detailFocus(
+  d: Draft,
+  t: DetailView,
+  item: { action: string; axis?: string },
+  column?: number,
+): void {
   t.action = item.action;
   if (item.action !== 'settings.back') d.session.detailFocus[t.group] = item.action;
   if (column !== undefined) t.column = column;

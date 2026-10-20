@@ -10,12 +10,27 @@ window.HezFrameConfig = {
     collection: 'all',
     collections: [
       { id: 'forests', name: 'Forests', wallpapers: ['forest'] },
-      { id: 'mountains', name: 'Mountains', wallpapers: ['peaks', 'ridge', 'summit', 'amber', 'alpine'] },
+      {
+        id: 'mountains',
+        name: 'Mountains',
+        wallpapers: ['peaks', 'ridge', 'summit', 'amber', 'alpine'],
+      },
       { id: 'coasts', name: 'Coastlines', wallpapers: ['misty', 'cove', 'golden'] },
-      { id: 'night', name: 'Night skies', wallpapers: ['night'] }
+      { id: 'night', name: 'Night skies', wallpapers: ['night'] },
     ],
     initial: 'forest',
     rotation: '5', // fixed, open, 5, 15 or 60
-    playlist: ['misty', 'cove', 'forest', 'peaks', 'ridge', 'golden', 'summit', 'amber', 'alpine', 'night']
-  }
+    playlist: [
+      'misty',
+      'cove',
+      'forest',
+      'peaks',
+      'ridge',
+      'golden',
+      'summit',
+      'amber',
+      'alpine',
+      'night',
+    ],
+  },
 };
