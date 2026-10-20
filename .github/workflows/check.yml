@@ -31,4 +31,5 @@ jobs:
       - run: npm run check:browser
       - run: npm run check:hezframe
       - run: npm run check:wallpapers
+      - run: npm run check:atmosphere
       - run: npm run export:public

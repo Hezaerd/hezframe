@@ -47,3 +47,15 @@ Distributed under the [MIT license](LICENSE). Original copyright and [third-part
 - `revision`: increase this number to apply revised wallpaper/rotation defaults to existing installations. Otherwise their saved choices take precedence.
 
 On screen, use **Settings → Background → Wallpaper / Rotation**. Manual wallpaper selection retains the full gallery. Automatic rotation uses only the configured playlist, skips city/abstract images by default, and pauses in settings, on flat backgrounds and while the app is hidden.
+
+## Atmosphere
+
+**Settings → Atmosphere** toggles cinema dimming, wallpaper crossfades and the personal greeting. **Settings → Background → Collection** selects All nature, Forests, Mountains, Coastlines or Night skies. Selection switches to a matching photograph and limits subsequent rotation; a single-photo collection stays fixed.
+
+In `app/config.js`:
+
+- `cinema.idleSeconds` sets the idle delay (default 60 seconds); `dimAmount` sets the dark overlay strength (default 0.55). Dimming only affects HezFrame, pauses in panels, and wakes on keyboard/remote, pointer or touch input. It does not change the TV picture settings.
+- `crossfade.durationMs` sets the wallpaper fade (default 900 ms). The next photo is loaded before fading; reduced-motion preferences disable this animation.
+- `greeting.name` adds an optional name, such as `Hezaerd`. Leave it empty for just “Good morning”, “Good afternoon” or “Good evening”, based on the TV's local time.
+- Each feature's `enabled` setting is the default for new preferences. Saved on-screen choices take precedence.
+- `wallpapers.collections` defines collection names and their wallpaper IDs; `wallpapers.collection` sets the initial collection. Photos and their pre-rendered materials must exist in the bundled gallery.
