@@ -165,6 +165,7 @@ export function cleanPrefs(env: Env, saved: Json | null, registry: Map<AppId, Ap
     cinema: pick(s.cinema, ON_OFF, env.defaults.cinema),
     crossfade: pick(s.crossfade, ON_OFF, env.defaults.crossfade),
     greeting: pick(s.greeting, ON_OFF, env.defaults.greeting),
+    sounds: pick(s.sounds, ON_OFF, env.defaults.sounds),
     collection: pick(s.collection, collections, env.defaultCollection),
   };
 }

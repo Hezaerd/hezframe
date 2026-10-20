@@ -1,0 +1,9 @@
+{
+  "ui-click.mp3": {
+    "source": "Maintainer-provided ui_click.mp3",
+    "permission": "Maintainer confirmed redistribution permission on 2026-10-20",
+    "license": "MIT (see root LICENSE)",
+    "processing": "Trim to 140 ms, fade out 100-140 ms, mono average, -3 dB gain, 44.1 kHz, 96 kb/s MP3",
+    "sha256": "db0c1e7788358d023ed4ec03ab3a5d17eaf6d0b10203e9ed804aade4913a40f3"
+  }
+}

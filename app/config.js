@@ -5,6 +5,7 @@ window.HezFrameConfig = {
   cinema: { enabled: true, idleSeconds: 60, dimAmount: 0.55 },
   crossfade: { enabled: true, durationMs: 900 },
   greeting: { enabled: true, name: '' },
+  sounds: { enabled: true, volume: 0.2 }, // 0 (silent) to 1; app volume, independent of TV volume
   wallpapers: {
     revision: 1,
     collection: 'all',

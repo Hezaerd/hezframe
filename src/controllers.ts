@@ -1,6 +1,7 @@
 import { cinemaAllowed, rotationActive } from './model/reducer.ts';
 import { rotationMode } from './model/state.ts';
 import type { RemoteKey } from './model/types.ts';
+import { createUISounds } from './platform/sounds.ts';
 import type { Store } from './store.ts';
 
 const KEYS: Record<number, RemoteKey | undefined> = {
@@ -117,6 +118,12 @@ export type Controllers = ReturnType<typeof createControllers>;
 export function createControllers(store: Store) {
   const cinema = createCinema(store),
     rotation = createRotation(store);
+  const sounds = createUISounds(store.getState().env.soundVolume);
+  const audible = () => {
+    const s = store.getState();
+    return s.prefs.sounds === 'on' && !s.hidden && !document.hidden && s.veil !== 'dim';
+  };
+  const click = () => sounds.play(audible);
   let stage: HTMLElement | null = null;
   const focusStage = () => {
     if (stage) stage.focus({ preventScroll: true });
@@ -126,6 +133,7 @@ export function createControllers(store: Store) {
     stage = el;
     let held: Record<number, boolean> = {};
     const keydown = (ev: KeyboardEvent) => {
+      const wasDimmed = store.getState().veil === 'dim';
       cinema.wake();
       const code = ev.keyCode,
         k = KEYS[code];
@@ -139,6 +147,7 @@ export function createControllers(store: Store) {
       if (k === 'ok' || k === 'back') {
         if (ev.repeat || held[code]) return;
         held[code] = true;
+        if (!wasDimmed) click();
       }
       store.dispatch({ type: 'key', key: k });
     };
@@ -157,7 +166,8 @@ export function createControllers(store: Store) {
       held = {};
       cinema.wake();
       store.dispatch({ type: 'visibility', hidden: document.hidden });
-      if (!document.hidden) focusStage();
+      if (document.hidden) sounds.silence();
+      else focusStage();
     };
     const wake = () => cinema.wake();
     document.addEventListener('mousemove', wake);
@@ -171,14 +181,18 @@ export function createControllers(store: Store) {
     const unsubscribe = store.subscribe(() => {
       cinema.sync();
       rotation.sync();
+      if (audible()) sounds.preload();
+      else sounds.silence();
     });
     cinema.start();
     rotation.start();
+    if (audible()) sounds.preload();
     focusStage();
     return () => {
       unsubscribe();
       cinema.stop();
       rotation.stop();
+      sounds.stop();
       document.removeEventListener('mousemove', wake);
       document.removeEventListener('touchstart', wake);
       document.removeEventListener('click', wake);
@@ -191,5 +205,5 @@ export function createControllers(store: Store) {
     };
   }
 
-  return { start, wake: cinema.wake, focusStage, rotationInfo: rotation.info };
+  return { start, click, wake: cinema.wake, focusStage, rotationInfo: rotation.info };
 }

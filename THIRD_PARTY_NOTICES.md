@@ -37,3 +37,7 @@ Development dependencies retain the licences in their npm packages. They are not
 ## React runtime
 
 The production bundle includes React, React DOM and Scheduler from the React project (MIT license). Their original license texts are copied from the installed packages into `licenses/react.txt`, `licenses/react-dom.txt` and `licenses/scheduler.txt` in the widget. Dependency versions are pinned by `package-lock.json`.
+
+## UI click
+
+`app/assets/sounds/ui-click.mp3` was supplied by the maintainer, who confirmed permission to redistribute it with HezFrame. It is distributed with this project under the root MIT license. Source and preparation details are in `app/assets/sounds/SOURCES.json`.
