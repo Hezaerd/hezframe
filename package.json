@@ -2,10 +2,12 @@
   "name": "hezframe",
   "version": "0.7.0",
   "private": true,
+  "type": "module",
   "description": "A quiet Samsung TV home screen with your apps, photographs and the time.",
   "scripts": {
     "dev": "vite",
-    "check": "tsc --noEmit && node --check app/config.js && node --check app/device.js && python scripts/check.py",
+    "check": "tsc --noEmit && npm test && node --check app/config.js && node --check app/device.js && python scripts/check.py",
+    "test": "node --test \"src/**/*.test.ts\"",
     "package": "python scripts/package.py",
     "tv:info": "python scripts/tv.py info",
     "tv:install": "python scripts/tv.py install",

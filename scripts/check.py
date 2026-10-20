@@ -16,7 +16,7 @@ assert manifest.get('version') == json.loads((root / 'package.json').read_text()
 for tag in ['content', 'icon']:
     node = manifest.find('w:' + tag, ns)
     assert node is not None and (app / node.get('src', '')).is_file(), 'Missing ' + tag + ' file'
-assert all((app / name).is_file() for name in ['main.js', 'style.css'])
+assert (app / 'style.css').is_file(), 'Missing style.css'
 for reference in ['assets/wallpapers/catalog.js', 'assets/adaptive-ink.js', 'assets/font-catalog.js']:
     assert (app / reference).is_file(), 'Missing runtime catalogue: ' + reference
 for filename in ['index.html']:

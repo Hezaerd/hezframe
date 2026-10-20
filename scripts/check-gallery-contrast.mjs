@@ -1,12 +1,12 @@
 // Paired pixels of actual production app labels. No TV connection.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { openPreview, root } from './browser.mjs';
+import { appSources, openPreview, root } from './browser.mjs';
 const out = root + '.local/qa/' + (process.env.GALLERY_OUT || 'gallery-contrast') + '/';
 mkdirSync(out, { recursive: true });
 const records = [], errors = [], source = {};
-for (const name of ['main.js', 'style.css', 'index.html', 'assets/wallpapers/catalog.js', 'assets/adaptive-ink.js']) {
-  source[name] = createHash('sha256').update(readFileSync(root + 'app/' + name)).digest('hex');
+for (const name of [...appSources(), 'app/style.css', 'app/index.html', 'app/assets/wallpapers/catalog.js', 'app/assets/adaptive-ink.js']) {
+  source[name] = createHash('sha256').update(readFileSync(root + name)).digest('hex');
 }
 const preview = await openPreview();
 try {
@@ -50,7 +50,7 @@ try {
   }
 } catch (error) { errors.push(error.message); throw error; }
 finally {
-  const after = Object.fromEntries(Object.keys(source).map(name => [name, createHash('sha256').update(readFileSync(root + 'app/' + name)).digest('hex')]));
+  const after = Object.fromEntries(Object.keys(source).map(name => [name, createHash('sha256').update(readFileSync(root + name)).digest('hex')]));
   writeFileSync(out + 'captures.json', JSON.stringify({ source, after, records, errors }, null, 2) + '\n');
   await preview.close();
 }

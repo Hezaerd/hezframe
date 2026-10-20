@@ -6,7 +6,7 @@ Photo backgrounds, large app names, a clock, remote navigation, and local appear
 
 ## Current device status
 
-The initial version was installed and physically tested on a Samsung Q60B running Tizen 6.5: rendering, remote navigation and launching Stremio worked. The React experiment preserves the existing app identity and preferences. Physical verification of this build remains pending.
+The initial version was installed and physically tested on a Samsung Q60B running Tizen 6.5: rendering, remote navigation and launching Stremio worked. The React version preserves the existing app identity and preferences. Physical verification of this build remains pending.
 
 Home-button reassignment and automatic startup are not configured. Open the app from Samsung Apps. Art Mode is omitted on this non-Frame TV.
 
@@ -61,10 +61,10 @@ In `app/config.js`:
 - `wallpapers.collections` defines collection names and their wallpaper IDs; `wallpapers.collection` sets the initial collection. Photos and their pre-rendered materials must exist in the bundled gallery.
 
 
-## React experiment
+## How the app is built
 
-React + TypeScript owns the stage shell, clock, greeting and settings overview in `src/`. The existing JavaScript controller still manages navigation, wallpaper assets, the other panels and Tizen calls. This is an incremental migration, not a complete component rewrite. React roots are explicitly unmounted when a controller-owned panel closes.
+React and TypeScript render the whole interface from one store in `src/`. A remote key becomes an action, a pure reducer in `src/model/` updates the state, and storage, Tizen, image, font and timer work runs at the edges. `app/device.js` (the Tizen adapter) and `app/config.js` (your settings) stay plain scripts in the widget, so you can still edit `config.js` after packaging.
 
-`npm run dev` starts Vite on port 5173. JavaScript/TypeScript edits reload the app so the legacy controller cannot accumulate duplicate listeners. `npm run build` type-checks the TSX and emits `dist/web/`, with a production IIFE bundle targeting Chrome 85 and local runtime assets. `npm run preview` serves that production output at http://localhost:4795/home/. The browser tests also run against the production output, and `npm run export:public` builds before making the unsigned widget.
+`npm run dev` starts Vite on port 5173. Edits reload the whole page, so the store and its timers start fresh. `npm run build` type-checks the TypeScript and emits `dist/web/`, with a production IIFE bundle targeting Chrome 85 and local runtime assets. `npm run preview` serves that production output at http://localhost:4795/home/. The browser tests also run against the production output, and `npm run export:public` builds before making the unsigned widget.
 
 The TV does not run Node.js or Vite. It receives the built files, signed with the existing Samsung certificates. React dependency licenses are included in the widget.
