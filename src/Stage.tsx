@@ -33,11 +33,9 @@ export function Stage() {
           <div className="dock" id="dock">
             <div className="mat" aria-hidden="true"><img className="mat-img" id="matImg" alt="" /><div className="mat-scrim" id="matScrim"></div><div className="mat-veil"></div></div>
             <div className="shelf" id="shelf"><div className="track" id="track"><div className="plate" id="plate"></div></div></div>
-            <div className="dock-empty" id="dockEmpty"></div>
           </div>
           <div className="cue" id="cueL" aria-hidden="true"></div>
           <div className="cue" id="cueR" aria-hidden="true"></div>
-          <div className="dock-action" id="dockAction" role="button"></div>
 
           <div className="ph-scene" id="phScene">
             <div className="ph-plate" id="phPlate" aria-hidden="true">
@@ -55,8 +53,6 @@ export function Stage() {
               <div className="ph-veil"></div>
             </div>
             <div className="ph-list" id="phList"><div className="ph-rows" id="phRows"></div></div>
-            <div className="ph-action" id="phAction" role="button"></div>
-            <div className="ph-empty" id="phEmpty"></div>
           </div>
 
         </div>
