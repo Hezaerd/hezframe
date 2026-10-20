@@ -1,6 +1,8 @@
 import {
+  memo,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   useSyncExternalStore,
@@ -61,11 +63,11 @@ export function pointAction(el: Element): Action | null {
 const RUNGS = ['light', 'mist', 'mist-high', 'dark', 'dark-halo'];
 const isVar = (name: string): name is `--${string}` => name.indexOf('--') === 0;
 function adaptivePalette(
-  s: State,
+  c: State['prefs'],
   palette: Palette | undefined,
 ): palette is Palette & { tl: PaletteZone; tr: PaletteZone; br: PaletteZone } {
   return (
-    s.prefs.bg === 'photo' &&
+    c.bg === 'photo' &&
     !!palette &&
     !palette.locked &&
     !!palette.light &&
@@ -76,13 +78,16 @@ function adaptivePalette(
 }
 
 /** Stage classes and variables: every appearance axis, the shown photo's offline inks and the current view. */
-function stage(s: State): { className: string; vars: CSSProperties } {
-  const c = s.prefs,
-    t = top(s),
-    shown = wallById(s.env, s.look.shown ? s.look.shown.wall : c.wall),
-    palette = s.env.palettes[shown.id],
-    font = homeFont(s);
-  const adaptive = adaptivePalette(s, palette) ? palette : null;
+function stage(
+  c: State['prefs'],
+  env: State['env'],
+  look: Pick<State['look'], 'shown' | 'fontSwitch' | 'reflow'>,
+  kind: State['stack'][number]['kind'],
+): { className: string; vars: CSSProperties } {
+  const shown = wallById(env, look.shown ? look.shown.wall : c.wall),
+    palette = env.palettes[shown.id],
+    font = look.shown ? look.shown.font : 'manrope';
+  const adaptive = adaptivePalette(c, palette) ? palette : null;
   const frost = [0.12, 0.2, 0.3, 0.36, 0.44].indexOf(shown.frostVeil);
   const vars: CSSProperties = {};
   for (const zone of ['tl', 'tr', 'br'] as const) {
@@ -138,29 +143,31 @@ function stage(s: State): { className: string; vars: CSSProperties } {
           .join('')
       : '') +
     ' at-' +
-    t.kind +
+    kind +
     ' font-' +
     font +
     (font === 'manrope' ? '' : ' font-custom') +
-    (s.look.fontSwitch ? ' is-font-switch' : '') +
+    (look.fontSwitch ? ' is-font-switch' : '') +
     (adaptive ? ' has-adaptive-ink adaptive-tl-' + adaptive.tl.pol : '') +
     (!adaptive && shown.clockInk ? ' has-clock-ink' : '') +
     (!adaptive && shown.dockClockInk ? ' has-dock-clock-ink' : '') +
     (c.bg === 'photo' && c.material === 'soft' ? ' registered-material' : '') +
-    (isSheet(t.kind) ? ' is-sheet' : '') +
-    (s.look.reflow ? ' is-reflow' : '');
+    (isSheet(kind) ? ' is-sheet' : '') +
+    (look.reflow ? ' is-reflow' : '');
   return { className, vars };
 }
 
 /** The selected face applies to Home text only; these variables carry its family, weights and cap-height shifts. */
-function homeFontVars(s: State): CSSProperties {
-  const id = homeFont(s),
-    f = FONTS[id],
+function homeFontVars(
+  id: ReturnType<typeof homeFont>,
+  allMetrics: State['fonts']['metrics'],
+): CSSProperties {
+  const f = FONTS[id],
     primary = fontRole(id, 'primary'),
     ui = fontRole(id, 'ui'),
-    metrics = s.fonts.metrics[id];
+    metrics = allMetrics[id];
   const shift = (role: 'clock' | 'ui' | 'primary', size: number) =>
-    px(fontShift(s.fonts.metrics, id, role, size));
+    px(fontShift(allMetrics, id, role, size));
   return {
     '--font-display-family': '"' + f.family + '"',
     '--font-ui-family': '"' + ui.family + '"',
@@ -223,88 +230,91 @@ const rendered = (el: Element) =>
  * A failed write keeps its retry message on the focused control. The line sits under that
  * control, so it is placed from the control's measured box.
  */
-function FocusStatus({
-  s,
-  stageRef,
-  homeRef,
-  sheetRef,
-}: {
-  s: State;
-  stageRef: RefObject<HTMLElement | null>;
-  homeRef: RefObject<HTMLDivElement | null>;
-  sheetRef: RefObject<HTMLDivElement | null>;
-}) {
-  const t = top(s),
-    text = s.session.err ? 'Not saved. OK tries again.' : '';
-  const [g, setG] = useState<{
-    left: number;
-    top: number;
-    width: number;
-    solid: boolean;
-    photo: boolean;
-    text: string;
-  } | null>(null);
-  useLayoutEffect(() => {
-    let next: typeof g = null;
-    const root = isSheet(t.kind) ? sheetRef.current : homeRef.current,
-      stageEl = stageRef.current;
-    if (!isSettingsDetail(t.kind) && text && root && stageEl) {
-      const target = [...root.querySelectorAll('.is-focus[data-action]')].find(rendered);
-      const parent = target && target.parentElement;
-      if (target && parent && !(parent.id === 'utils' && parent.classList.contains('is-icons'))) {
-        const photo = s.prefs.layout === 'list' && target.classList.contains('ph-row');
-        const r = target.getBoundingClientRect(),
-          sr = stageEl.getBoundingClientRect(),
-          scale = sr.width / 1920 || 1;
-        let x = (r.left - sr.left) / scale,
-          y = (r.top - sr.top) / scale,
-          w = r.width / scale;
-        if (photo) {
-          const ts = typeset(homeInput(s));
-          x =
-            112 +
-            ts.listPlateWidth(s.prefs.home[clamp(s.session.selIdx, 0, s.prefs.home.length - 1)]) +
-            24;
-          y += (r.height / scale - 28) / 2;
-          w = 400;
-        } else
-          y += (target.getAttribute('data-action') || '').indexOf('home.app.') === 0 ? 171 : 40;
-        const solid =
-          /(?:^|\s)(?:u|btn|er-rm)(?:\s|$)/.test(target.className) &&
-          parent.id !== 'utils' &&
-          !parent.classList.contains('s-head');
-        next = {
-          left: clamp(x + 8, 112, 1808 - Math.min(w - 16, 800)),
-          top: clamp(y, 72, 988),
-          width: Math.min(w - 16, 800),
-          solid,
-          photo,
-          text,
-        };
+const FocusStatus = memo(
+  function FocusStatus({
+    s,
+    stageRef,
+    homeRef,
+    sheetRef,
+  }: {
+    s: State;
+    stageRef: RefObject<HTMLElement | null>;
+    homeRef: RefObject<HTMLDivElement | null>;
+    sheetRef: RefObject<HTMLDivElement | null>;
+  }) {
+    const t = top(s),
+      text = s.session.err ? 'Not saved. OK tries again.' : '';
+    const [g, setG] = useState<{
+      left: number;
+      top: number;
+      width: number;
+      solid: boolean;
+      photo: boolean;
+      text: string;
+    } | null>(null);
+    useLayoutEffect(() => {
+      let next: typeof g = null;
+      const root = isSheet(t.kind) ? sheetRef.current : homeRef.current,
+        stageEl = stageRef.current;
+      if (!isSettingsDetail(t.kind) && text && root && stageEl) {
+        const target = [...root.querySelectorAll('.is-focus[data-action]')].find(rendered);
+        const parent = target && target.parentElement;
+        if (target && parent && !(parent.id === 'utils' && parent.classList.contains('is-icons'))) {
+          const photo = s.prefs.layout === 'list' && target.classList.contains('ph-row');
+          const r = target.getBoundingClientRect(),
+            sr = stageEl.getBoundingClientRect(),
+            scale = sr.width / 1920 || 1;
+          let x = (r.left - sr.left) / scale,
+            y = (r.top - sr.top) / scale,
+            w = r.width / scale;
+          if (photo) {
+            const ts = typeset(homeInput(s));
+            x =
+              112 +
+              ts.listPlateWidth(s.prefs.home[clamp(s.session.selIdx, 0, s.prefs.home.length - 1)]) +
+              24;
+            y += (r.height / scale - 28) / 2;
+            w = 400;
+          } else
+            y += (target.getAttribute('data-action') || '').indexOf('home.app.') === 0 ? 171 : 40;
+          const solid =
+            /(?:^|\s)(?:u|btn|er-rm)(?:\s|$)/.test(target.className) &&
+            parent.id !== 'utils' &&
+            !parent.classList.contains('s-head');
+          next = {
+            left: clamp(x + 8, 112, 1808 - Math.min(w - 16, 800)),
+            top: clamp(y, 72, 988),
+            width: Math.min(w - 16, 800),
+            solid,
+            photo,
+            text,
+          };
+        }
       }
-    }
-    // oxlint-disable-next-line react/set-state-in-effect -- This layout measurement positions the retry line before paint.
-    setG((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
-  }, [s, t.kind, text, homeRef, sheetRef, stageRef]);
-  const shown = useLastShown(g, JSON.stringify(g));
-  return (
-    <div
-      className={
-        'focus-status' +
-        (g ? ' is-on' + (g.solid ? ' dark-ink' : '') + (g.photo ? ' photo-status' : '') : '')
-      }
-      id="focusStatus"
-      aria-live="polite"
-      style={
-        shown
-          ? { left: shown.left + 'px', top: shown.top + 'px', width: shown.width + 'px' }
-          : undefined
-      }
-    >
-      {shown ? shown.text : ''}
-    </div>
-  );
-}
+      // oxlint-disable-next-line react/set-state-in-effect -- This layout measurement positions the retry line before paint.
+      setG((prev) => (JSON.stringify(prev) === JSON.stringify(next) ? prev : next));
+    }, [s, t.kind, text, homeRef, sheetRef, stageRef]);
+    const shown = useLastShown(g, JSON.stringify(g));
+    return (
+      <div
+        className={
+          'focus-status' +
+          (g ? ' is-on' + (g.solid ? ' dark-ink' : '') + (g.photo ? ' photo-status' : '') : '')
+        }
+        id="focusStatus"
+        aria-live="polite"
+        style={
+          shown
+            ? { left: shown.left + 'px', top: shown.top + 'px', width: shown.width + 'px' }
+            : undefined
+        }
+      >
+        {shown ? shown.text : ''}
+      </div>
+    );
+  },
+  (a, b) => !a.s.session.err && !b.s.session.err,
+);
 
 export function App({ store, controllers }: { store: Store; controllers: Controllers }) {
   const s = useSyncExternalStore(store.subscribe, store.getState);
@@ -321,8 +331,20 @@ export function App({ store, controllers }: { store: Store; controllers: Control
   useEffect(() => {
     if (stageRef.current) return controllers.start(stageRef.current);
   }, [controllers]);
-  const { className, vars } = stage(s),
-    fade = s.look.crossfade;
+  const font = homeFont(s),
+    prefs = s.prefs,
+    env = s.env,
+    shown = s.look.shown,
+    fontSwitch = s.look.fontSwitch,
+    reflow = s.look.reflow,
+    kind = t.kind,
+    metrics = s.fonts.metrics;
+  const { className, vars } = useMemo(
+    () => stage(prefs, env, { shown, fontSwitch, reflow }, kind),
+    [prefs, env, shown, fontSwitch, reflow, kind],
+  );
+  const fontVars = useMemo(() => homeFontVars(font, metrics), [font, metrics]);
+  const fade = s.look.crossfade;
   const click = (ev: MouseEvent<HTMLElement>) => {
     const el = ev.target instanceof Element ? ev.target.closest('[data-z]') : null;
     controllers.focusStage();
@@ -371,7 +393,7 @@ export function App({ store, controllers }: { store: Store; controllers: Control
             <div className="ut-dim ut-tr"></div>
             <div className="ut-dim ut-br"></div>
           </div>
-          <div ref={homeRef} className="home" id="home" style={homeFontVars(s)}>
+          <div ref={homeRef} className="home" id="home" style={fontVars}>
             <Home h={homeInput(homeState)} sceneRef={sceneRef} />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from 'react';
 import { thumbSrc } from '../model/assets.ts';
 import { isSettingsDetail, top, wallById, wallIndex } from '../model/state.ts';
 import { DETAIL_NAMES, FONTS, LOOK_NAMES, WALL_ROW, WALL_VISIBLE } from '../model/tables.ts';
@@ -362,12 +362,14 @@ export function Appearance({
   const open = isSettingsDetail(top(s).kind),
     last = useLatestWhen(s, open),
     t = top(last);
-  const view =
-    t.kind === 'appearance'
-      ? detailParts(last, t)
-      : t.kind === 'wallpaper'
-        ? wallpaperParts(last, t)
+  const view = useMemo(() => {
+    const v = top(last);
+    return v.kind === 'appearance'
+      ? detailParts(last, v)
+      : v.kind === 'wallpaper'
+        ? wallpaperParts(last, v)
         : null;
+  }, [last]);
   const className =
     t.kind === 'appearance'
       ? 'appearance detail-' + t.group
